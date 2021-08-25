@@ -3,20 +3,14 @@ import commandLineArgs from "command-line-args";
 import { FileManager } from "./file-manager";
 import { ConfigManager, SkemConfig } from "./config-manager";
 import Path from "path";
+import colors from "colors";
 import { VariableManager } from "./variable-manager";
 import child_process from 'child_process';
 import inquirer from 'inquirer';
+import { CommandLineUsage, Commands } from "./command-line";
 
 export interface SkemOptions {
-    command:
-        | 'help' | 'h'
-        | 'install' | 'i'
-        | 'add' | 'a'
-        | 'generate' | 'g'
-        | 'list' | 'ls'
-        | 'remove' | 'rm'
-        | 'update' | 'u'
-        | 'print' | 'p';
+    command: Commands;
     'install-packages': boolean;
     help: boolean;
     repo: boolean;
@@ -281,71 +275,57 @@ async function listConfigs() {
     const config = ConfigManager.getConfig();
     const configs = Object.keys(config);
     if (configs.length === 0) {
-        console.log('There are no config available on this system. Try to add one with "skem add".');
+        console.log(colors.grey('There are no config available on this system. Try to add one with "skem add".'));
         return;
     }
-    console.log(`Here ${configs.length !== 1 ? 'are' : 'is'} the available config${configs.length !== 1 ? 's' : ''}:`);
+    console.log(colors.grey(`Here ${configs.length !== 1 ? 'are' : 'is'} the available config${configs.length !== 1 ? 's' : ''}:`));
     console.log();
     for (let key of configs) {
         console.log('-', key);
     }
 }
 
-async function printConfig(options: SkemOptions) {
-    const config = await chooseConfiguration(options);
-    let summary = `    Name: ${config.name}`;
-    summary += `\n    Root: ${config.root}`;
-    if (!config.isFile) {
-        summary += `\n\n    Files:`;
-        for (const files of config.files) {
-            summary += `\n        - ${files}`;
-        }
-    } else {
-        summary += `\n\n    Single File`;
-    }
-    summary += `\n\n    Variables:`;
-    for (const variable of config.variables.variables) {
-        summary += `\n        - ${variable}`;
-    }
-    console.log(summary);
-}
-
 async function main() {
-    console.log();
-    switch (options.command) {
-        case 'help':
-        case 'h':
-            break;
-        case 'install':
-        case 'i':
-        case 'generate':
-        case 'g':
-            await install(options);
-            break;
-        case 'add':
-        case 'a':
-            if (options.repo) {
-                await loopOnSubFoldersAndExtractConfigFromProject(options);
-            } else {
-                await extractConfigFromProject(options);
-            }
-            break;
-        case 'remove':
-        case 'rm':
-            await ConfigManager.removeFromConfig(options);
-            break;
-        case 'list':
-        case 'ls':
-            await listConfigs();
-            break;
-        case 'print':
-        case 'p':
-            await printConfig(options);
-            break;
-        case 'update':
-        case 'u':
-            await update(options);
-            break;
+    if (options.help) {
+        CommandLineUsage.showHelp(options);
+    } else {
+        console.log();
+        switch (options.command) {
+            case 'help':
+            case 'h':
+                CommandLineUsage.showHelp(options)
+                break;
+            case 'install':
+            case 'i':
+            case 'generate':
+            case 'g':
+                await install(options);
+                break;
+            case 'add':
+            case 'a':
+                if (options.repo) {
+                    await loopOnSubFoldersAndExtractConfigFromProject(options);
+                } else {
+                    await extractConfigFromProject(options);
+                }
+                break;
+            case 'remove':
+            case 'rm':
+                await ConfigManager.removeFromConfig(options);
+                break;
+            case 'list':
+            case 'ls':
+                await listConfigs();
+                break;
+            case 'print':
+            case 'p':
+                await ConfigManager.printConfig(options);
+                break;
+            case 'update':
+            case 'u':
+                await update(options);
+                break;
+        }
     }
     console.log();
 }

@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { FileManager } from "./file-manager";
-import { SkemOptions } from "./index";
+import { chooseConfiguration, SkemOptions } from "./index";
 import inquirer from "inquirer";
+import colors from 'colors';
 
 const localDBFile = path.resolve(__dirname, "./db/db.json");
 
@@ -63,5 +64,25 @@ export class ConfigManager {
     static doesConfigExist(name: string): boolean {
         const currentConfig = this.getConfig();
         return !!currentConfig[name];
+    }
+
+    static async printConfig(options: SkemOptions) {
+        const config = await chooseConfiguration(options);
+        let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
+        summary += `\n    ${colors.grey('Root')}: ${config.root}`;
+        if (!config.isFile) {
+            summary += `\n\n    ${colors.grey('Files')}:`;
+            for (const files of config.files) {
+                summary += `\n        - ${files}`;
+            }
+        } else {
+            summary += `\n\n    ${colors.grey('Single File')}`;
+        }
+        summary += `\n\n    ${colors.grey('Variables')}:`;
+        for (const variable of config.variables.variables) {
+            summary += `\n        - ${variable}`;
+        }
+        console.log(summary);
+
     }
 }
