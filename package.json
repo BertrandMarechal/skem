@@ -1,0 +1,25 @@
+{
+  "name": "skem",
+  "version": "1.0.0",
+  "description": "Make your projects easier with schematics",
+  "skem": "./dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/command-line-args": "^5.2.0",
+    "@types/inquirer": "^7.3.3",
+    "@types/node": "^16.7.1",
+    "@types/uuid": "^8.3.1"
+  },
+  "dependencies": {
+    "command-line-args": "^5.2.0",
+    "inquirer": "^8.1.2",
+    "uuid": "^8.3.2"
+  },
+  "bin": {
+    "skem": "./dist/index.js"
+  }
+}
