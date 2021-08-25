@@ -113,13 +113,9 @@ export class FileManager {
     }
 
     private static createFolderIfNotExistsSync(folderName: string) {
-        if (!fs.existsSync(folderName)) {
+        if (folderName && !fs.existsSync(folderName)) {
             fs.mkdirSync(folderName);
         }
-    }
-
-    private static checkIfFolderExists(folderName: string) {
-        return fs.existsSync(folderName);
     }
 
     private static createFolderStructureIfNeeded(path: string, depth: number = 0): void {

@@ -1,0 +1,4 @@
+/node_modules/
+/schematics/aws-lambda/**/*.js
+/dist/
+/.idea/
