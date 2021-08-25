@@ -1,4 +1,5 @@
 /node_modules/
-/schematics/aws-lambda/**/*.js
+/schematics/**/*.js
 /dist/
 /.idea/
+/db/

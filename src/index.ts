@@ -118,17 +118,24 @@ export async function update(options: SkemOptions) {
     const config = ConfigManager.getConfig();
     const { name } = options;
     if (name) {
-        if (!config[name]) {
+        if (!ConfigManager.doesConfigExist(name)) {
             console.error(`Unknown configuration: ${name}`);
             process.exit(1);
         }
-        console.log(`Updating ${name}`);
-        await extractConfigFromProject({ ...options, path: config[name].root });
+        await extractConfigFromProject({
+            ...options,
+            path: config[name].root,
+            isUpdate: true,
+        });
     } else {
         const schematics = Object.keys(config);
         for (const schematic of schematics) {
-            console.log(`Updating ${schematic}`);
-            await extractConfigFromProject({ ...options, path: config[schematic].root, name: schematic });
+            await extractConfigFromProject({
+                ...options,
+                path: config[schematic].root,
+                name: schematic,
+                isUpdate: true,
+            });
         }
     }
 }
@@ -147,17 +154,46 @@ export async function loopOnSubFoldersAndExtractConfigFromProject(options: SkemO
     }
 }
 
-export async function extractConfigFromProject({ path, name }: SkemOptions) {
-    console.log(`Adding ${name}`);
+export async function extractConfigFromProject({ path, name, isUpdate }: SkemOptions & { isUpdate?: boolean }) {
+    let configName: string = name || '';
+    const isDirectory = FileManager.isDirectory(path);
+    if (!name) {
+        if (isDirectory) {
+            configName = Path.basename(Path.resolve(path));
+            const { desiredName } = await inquirer.prompt({
+                name: 'desiredName',
+                type: 'input',
+                message: `Please choose a name for this configuration (press enter for "${configName}")`
+            });
+            if (desiredName) {
+                configName = desiredName;
+            }
+        } else {
+            while(!configName) {
+                const { desiredName } = await inquirer.prompt({
+                    name: 'desiredName',
+                    type: 'input',
+                    message: `Please choose a name for this configuration:`
+                });
+                configName = desiredName;
+            }
+        }
+    }
+    if (isUpdate) {
+        console.log(`Updating ${configName}`);
+    } else {
+        console.log(`Adding ${configName}`);
+    }
     const root = Path.resolve(path);
     const { files, preferredPackageManager } = FileManager.getFileList(root);
     const variables = FileManager.getVariables(files);
-    if (name) {
-        ConfigManager.addToConfig(name, {
-                name,
+    if (configName) {
+        ConfigManager.addToConfig(configName, {
+                isFile: !isDirectory,
+                name: configName,
                 root,
                 preferredPackageManager,
-                files: files.map(f => f.replace(root, '')),
+                files: isDirectory ? files.map(f => f.replace(root, '')) : [root],
                 variables: {
                     ...variables,
                     variablesInFiles: variables.variablesInFiles.map(item => {
@@ -167,14 +203,18 @@ export async function extractConfigFromProject({ path, name }: SkemOptions) {
                 },
             }
         );
-        console.log(`Added ${name}`);
+        if (isUpdate) {
+            console.log(`Updated ${configName}`);
+        } else {
+            console.log(`Added ${configName}`);
+        }
     }
 }
 
 export async function install(
     options: SkemOptions,
 ) {
-    const { path, name } = options
+    const { path, name } = options;
     const config = await chooseConfiguration(options);
     let variables: Record<string, string> = {};
     console.log(`Installing ${name}`);
@@ -191,29 +231,48 @@ export async function install(
         }
     }
     const skemConfig = config;
-    const newRoot = Path.resolve(path, variables.name);
-    for (let i = 0; i < skemConfig.files.length; i++) {
-        const fileName = skemConfig.files[i];
-        const newFileName = newRoot + VariableManager.replaceVariableInFileName(
+    if (skemConfig.isFile) {
+        const fileName = Path.basename(skemConfig.root);
+        const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
             fileName,
-            skemConfig.variables.fileVariables[`${i}`] || [],
+            config.variables.variables,
             variables
-        );
+        ));
+        console.log(newFileName);
         console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
         FileManager.writeFileSync(
             newFileName,
             VariableManager.replaceVariablesInFile(
-                skemConfig.root + fileName,
-                skemConfig.variables.fileVariables[`${i}`] || [],
+                skemConfig.root,
+                config.variables.variables,
                 variables
             )
         );
-    }
-    if (options["install-packages"]) {
-        const packageJsons = skemConfig.files.filter(f => /package\.json$/.test(f));
-        for (let packageJson of packageJsons) {
-            const newFileName = newRoot + packageJson.replace(/package\.json$/, '');
-            runPackageInstaller(newFileName);
+    } else {
+        const newRoot = Path.resolve(path, variables.name);
+        for (let i = 0; i < skemConfig.files.length; i++) {
+            const fileName = skemConfig.files[i];
+            const newFileName = newRoot + VariableManager.replaceVariableInFileName(
+                fileName,
+                skemConfig.variables.fileVariables[`${i}`] || [],
+                variables
+            );
+            console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
+            FileManager.writeFileSync(
+                newFileName,
+                VariableManager.replaceVariablesInFile(
+                    skemConfig.root + fileName,
+                    skemConfig.variables.fileVariables[`${i}`] || [],
+                    variables
+                )
+            );
+        }
+        if (options["install-packages"]) {
+            const packageJsons = skemConfig.files.filter(f => /package\.json$/.test(f));
+            for (let packageJson of packageJsons) {
+                const newFileName = newRoot + packageJson.replace(/package\.json$/, '');
+                runPackageInstaller(newFileName);
+            }
         }
     }
 }
@@ -236,9 +295,13 @@ async function printConfig(options: SkemOptions) {
     const config = await chooseConfiguration(options);
     let summary = `    Name: ${config.name}`;
     summary += `\n    Root: ${config.root}`;
-    summary += `\n\n    Files:`;
-    for (const files of config.files) {
-        summary += `\n        - ${files}`;
+    if (!config.isFile) {
+        summary += `\n\n    Files:`;
+        for (const files of config.files) {
+            summary += `\n        - ${files}`;
+        }
+    } else {
+        summary += `\n\n    Single File`;
     }
     summary += `\n\n    Variables:`;
     for (const variable of config.variables.variables) {
@@ -263,10 +326,7 @@ async function main() {
         case 'a':
             if (options.repo) {
                 await loopOnSubFoldersAndExtractConfigFromProject(options);
-            } else if (!options.name) {
-                console.error('Missing argument: --name');
-                process.exit(1);
-            } else if (options.name) {
+            } else {
                 await extractConfigFromProject(options);
             }
             break;
@@ -287,6 +347,7 @@ async function main() {
             await update(options);
             break;
     }
+    console.log();
 }
 
 (async () => {

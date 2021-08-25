@@ -16,6 +16,7 @@ export interface SkemVariables {
 }
 
 export interface SkemConfig {
+    isFile: boolean;
     root: string;
     name: string;
     preferredPackageManager: 'npm' | 'yarn';
@@ -57,5 +58,10 @@ export class ConfigManager {
                 console.log(`Configuration cleared`);
             }
         }
+    }
+
+    static doesConfigExist(name: string): boolean {
+        const currentConfig = this.getConfig();
+        return !!currentConfig[name];
     }
 }

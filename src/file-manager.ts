@@ -26,6 +26,12 @@ export class FileManager {
 
     static getFileList(path: string): { files: string[]; preferredPackageManager: 'npm' | 'yarn'; } {
         let currentPreferredPackageManager: 'npm' | 'yarn' | '' = "";
+        if (!this.isDirectory(path)) {
+            return {
+                files: [path],
+                preferredPackageManager: 'npm'
+            };
+        }
         let files = fs.readdirSync(path);
         for (const file of files) {
             if (file === 'package-lock.json') {
