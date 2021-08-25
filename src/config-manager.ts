@@ -66,7 +66,7 @@ export class ConfigManager {
         return !!currentConfig[name];
     }
 
-    static async printConfig(options: SkemOptions) {
+    static async printConfig(options: Pick<SkemOptions, 'name'>) {
         const config = await chooseConfiguration(options);
         let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
         summary += `\n    ${colors.grey('Root')}: ${config.root}`;

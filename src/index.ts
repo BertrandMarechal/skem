@@ -70,7 +70,7 @@ const options: SkemOptions = commandLineArgs([
     },
 ]) as any;
 
-export async function chooseConfiguration({ name }: SkemOptions): Promise<SkemConfig> {
+export async function chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemConfig> {
     const configs = ConfigManager.getConfig();
     if (name) {
         if (!configs[name]) {
@@ -163,7 +163,7 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
                 configName = desiredName;
             }
         } else {
-            while(!configName) {
+            while (!configName) {
                 const { desiredName } = await inquirer.prompt({
                     name: 'desiredName',
                     type: 'input',
@@ -173,10 +173,23 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
             }
         }
     }
+    if (!isUpdate) {
+        const configs = ConfigManager.getConfig();
+        if (configs[configName]) {
+            const { confirm } = await inquirer.prompt({
+                type: "confirm",
+                name: 'confirm',
+                message: 'There is an existing configuration with this name. Do you want to overwrite it ?'
+            });
+            if (!confirm) {
+                process.exit(0);
+            }
+        }
+    }
     if (isUpdate) {
-        console.log(`Updating ${configName}`);
+        console.log(`    Updating ${colors.cyan(configName)}`);
     } else {
-        console.log(`Adding ${configName}`);
+        console.log(`    Adding ${colors.cyan(configName)}`);
     }
     const root = Path.resolve(path);
     const { files, preferredPackageManager } = FileManager.getFileList(root);
@@ -198,9 +211,13 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
             }
         );
         if (isUpdate) {
-            console.log(`Updated ${configName}`);
+            console.log(`    Updated ${colors.cyan(configName)}`);
         } else {
-            console.log(`Added ${configName}`);
+            console.log(`    Added ${colors.cyan(configName)}`);
+        }
+        console.log();
+        if (!isUpdate) {
+            await ConfigManager.printConfig({ name: configName });
         }
     }
 }
@@ -211,7 +228,7 @@ export async function install(
     const { path, name } = options;
     const config = await chooseConfiguration(options);
     let variables: Record<string, string> = {};
-    console.log(`Installing ${name}`);
+    console.log(`Installing ${colors.cyan(name)}`);
     if (config.variables.variables.length) {
         for (let variable of config.variables.variables) {
             while (!variables[variable]) {
@@ -293,7 +310,7 @@ async function main() {
         switch (options.command) {
             case 'help':
             case 'h':
-                CommandLineUsage.showHelp(options)
+                CommandLineUsage.showHelp(options);
                 break;
             case 'install':
             case 'i':
