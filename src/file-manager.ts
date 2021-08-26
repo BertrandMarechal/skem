@@ -1,8 +1,8 @@
-import fs from "fs";
-import Path from "path";
-import { SkemVariables } from "./config-manager";
+import fs from 'fs';
+import Path from 'path';
+import { SkemVariables } from './config-manager';
 
-const gitignoreParser = require("@gerhobbelt/gitignore-parser");
+import gitignoreParser from '@gerhobbelt/gitignore-parser';
 
 const ignoredPaths = [
     'node_modules',
@@ -15,20 +15,20 @@ const ignoredFiles = [
 ];
 
 export class FileManager {
-    static isDirectory(path: string) {
+    static isDirectory(path: string): boolean {
         return fs.lstatSync(path).isDirectory();
     }
 
-    static getNonIgnoredFolderList(path: string) {
-        let files = fs.readdirSync(path);
+    static getNonIgnoredFolderList(path: string): string[] {
+        const files = fs.readdirSync(path);
         return files.filter(f =>
             this.isDirectory(f) && !ignoredPaths.some(p => p === f)
         );
     }
 
-    static getFileList(path: string, parentGitIgnores: { gitignore: any, root: string }[] = []): { files: string[]; preferredPackageManager: 'npm' | 'yarn'; } {
+    static getFileList(path: string, parentGitIgnores: { gitignore: unknown, root: string }[] = []): { files: string[]; preferredPackageManager: 'npm' | 'yarn'; } {
         const gitIgnores = [...parentGitIgnores];
-        let currentPreferredPackageManager: 'npm' | 'yarn' | '' = "";
+        let currentPreferredPackageManager: 'npm' | 'yarn' | '' = '';
         if (!this.isDirectory(path)) {
             return {
                 files: [path],
@@ -54,7 +54,7 @@ export class FileManager {
             .filter(fileName => {
                 const realFileName = Path.resolve(path, fileName);
                 for (const { root, gitignore } of gitIgnores) {
-                    const denied = gitignore.denies(
+                    const denied = (gitignore as { denies: (name: string) => boolean }).denies(
                         realFileName
                             .replace(root + '\\', '')
                             .replace(/\\/g, '/')
@@ -70,8 +70,8 @@ export class FileManager {
             })
             .map((fileName) => Path.resolve(path, fileName));
 
-        let extraFiles: string[] = [];
-        let directories: string[] = [];
+        const extraFiles: string[] = [];
+        const directories: string[] = [];
         for (const file of files) {
             if (this.isDirectory(file)) {
                 directories.push(file);
@@ -100,7 +100,7 @@ export class FileManager {
         const variables: string[] = [];
         const fileVariables: Record<number, string[]> = {};
         for (let i = 0; i < fileList.length; i++) {
-            let fileName = fileList[i];
+            const fileName = fileList[i];
             const data = fs.readFileSync(fileName, 'ascii');
             let matchedVariables = (data.match(/___([a-z0-9-]+)___/ig) || [])
                 .concat(fileName.match(/___([a-z0-9-]+)___/ig) || []);
@@ -133,7 +133,7 @@ export class FileManager {
         };
     }
 
-    static writeFileSync(fileName: string, content: string) {
+    static writeFileSync(fileName: string, content: string): void {
         this.createFolderStructureIfNeeded(fileName);
         fs.writeFileSync(fileName, content);
     }
@@ -144,7 +144,7 @@ export class FileManager {
         }
     }
 
-    private static createFolderStructureIfNeeded(path: string, depth: number = 0): void {
+    private static createFolderStructureIfNeeded(path: string, depth = 0): void {
         const splitPath = path
             .replace(/\\/g, '/')
             .replace(/\/\//g, '/')

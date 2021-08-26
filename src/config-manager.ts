@@ -1,11 +1,11 @@
-import fs from "fs";
-import path from "path";
-import { FileManager } from "./file-manager";
-import { chooseConfiguration, SkemOptions } from "./index";
-import inquirer from "inquirer";
+import fs from 'fs';
+import path from 'path';
+import { FileManager } from './file-manager';
+import { chooseConfiguration, SkemOptions } from './index';
+import inquirer from 'inquirer';
 import colors from 'colors';
 
-const localDBFile = path.resolve(__dirname, "./db/db.json");
+const localDBFile = path.resolve(__dirname, './db/db.json');
 
 export interface SkemVariables {
     variables: string[];
@@ -36,13 +36,13 @@ export class ConfigManager {
         }
     }
 
-    static addToConfig(configName: string, config: SkemConfig) {
+    static addToConfig(configName: string, config: SkemConfig): void {
         const currentConfig = this.getConfig();
         currentConfig[configName] = config;
         FileManager.writeFileSync(localDBFile, JSON.stringify(currentConfig, null, 2));
     }
 
-    static async removeFromConfig({ name }: SkemOptions) {
+    static async removeFromConfig({ name }: SkemOptions): Promise<void> {
         const currentConfig = this.getConfig();
         if (name) {
             delete currentConfig[name];
@@ -50,13 +50,13 @@ export class ConfigManager {
             console.log(`Configuration cleared for ${name}`);
         } else {
             const { all } = await inquirer.prompt({
-                type: "confirm",
+                type: 'confirm',
                 name: 'all',
                 message: 'Do you want to remove all configurations ?'
             });
             if (all) {
                 FileManager.writeFileSync(localDBFile, JSON.stringify({}, null, 2));
-                console.log(`Configuration cleared`);
+                console.log('Configuration cleared');
             }
         }
     }
@@ -66,7 +66,7 @@ export class ConfigManager {
         return !!currentConfig[name];
     }
 
-    static async printConfig(options: Pick<SkemOptions, 'name'>) {
+    static async printConfig(options: Pick<SkemOptions, 'name'>): Promise<void> {
         const config = await chooseConfiguration(options);
         let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
         summary += `\n    ${colors.grey('Root')}: ${config.root}`;

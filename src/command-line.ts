@@ -1,5 +1,5 @@
-import commandLineUsage, { Section } from "command-line-usage";
-import { SkemOptions } from "./index";
+import commandLineUsage, { Section } from 'command-line-usage';
+import { SkemOptions } from './index';
 
 export type Commands =
     | 'help' | 'h'
@@ -169,38 +169,38 @@ const help: Record<string, Section[]> = {
 };
 
 export class CommandLineUsage {
-    static showHelp({ command }: SkemOptions) {
+    static showHelp({ command }: SkemOptions): void {
         switch (command) {
-            case "help":
-            case "h":
-                console.log(commandLineUsage(help.global));
-                break;
-            case "add":
-            case "a":
-                console.log(commandLineUsage(help.add));
-                break;
-            case "remove":
-            case "rm":
-                console.log(commandLineUsage(help.remove));
-                break;
-            case "list":
-            case "ls":
-                console.log(commandLineUsage(help.list));
-                break;
-            case "print":
-            case "p":
-                console.log(commandLineUsage(help.print));
-                break;
-            case "update":
-            case "u":
-                console.log(commandLineUsage(help.update));
-                break;
-            case 'install':
-            case 'i':
-            case 'generate':
-            case 'g':
-                console.log(commandLineUsage(help.install));
-                break;
+        case 'help':
+        case 'h':
+            console.log(commandLineUsage(help.global));
+            break;
+        case 'add':
+        case 'a':
+            console.log(commandLineUsage(help.add));
+            break;
+        case 'remove':
+        case 'rm':
+            console.log(commandLineUsage(help.remove));
+            break;
+        case 'list':
+        case 'ls':
+            console.log(commandLineUsage(help.list));
+            break;
+        case 'print':
+        case 'p':
+            console.log(commandLineUsage(help.print));
+            break;
+        case 'update':
+        case 'u':
+            console.log(commandLineUsage(help.update));
+            break;
+        case 'install':
+        case 'i':
+        case 'generate':
+        case 'g':
+            console.log(commandLineUsage(help.install));
+            break;
         }
     }
 }

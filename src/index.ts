@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-import commandLineArgs from "command-line-args";
-import { FileManager } from "./file-manager";
-import { ConfigManager, SkemConfig } from "./config-manager";
-import Path from "path";
-import colors from "colors";
-import { VariableManager } from "./variable-manager";
+import commandLineArgs from 'command-line-args';
+import { FileManager } from './file-manager';
+import { ConfigManager, SkemConfig } from './config-manager';
+import Path from 'path';
+import colors from 'colors';
+import { VariableManager } from './variable-manager';
 import child_process from 'child_process';
 import inquirer from 'inquirer';
-import { CommandLineUsage, Commands } from "./command-line";
+import { CommandLineUsage, Commands } from './command-line';
 
 export interface SkemOptions {
     command: Commands;
@@ -37,7 +37,7 @@ const options: SkemOptions = commandLineArgs([
         name: 'ignore',
         alias: 'i',
         type: String,
-        defaultValue: ""
+        defaultValue: ''
     },
     {
         name: 'repo',
@@ -68,7 +68,7 @@ const options: SkemOptions = commandLineArgs([
         type: String,
         defaultValue: '.'
     },
-]) as any;
+]) as SkemOptions;
 
 export async function chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemConfig> {
     const configs = ConfigManager.getConfig();
@@ -87,16 +87,16 @@ export async function chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): 
             process.exit(1);
         }
     }
-    let configName: string = "";
+    let configName = '';
     if (Object.keys(configNames).length === 1) {
         configName = configNames[0];
-        console.log(`Selected ${configName} as the only config available${!!name ? ' with the filter' : ''}.`);
+        console.log(`Selected ${configName} as the only config available${name ? ' with the filter' : ''}.`);
         console.log();
     }
     while (!configName) {
         const { choice } = await inquirer.prompt({
             name: 'choice',
-            type: "list",
+            type: 'list',
             message: 'Please choose the configuration you want:',
             choices: configNames
         });
@@ -105,14 +105,14 @@ export async function chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): 
     return configs[configName];
 }
 
-export function runPackageInstaller(cwd: string) {
+export function runPackageInstaller(cwd: string): void {
     child_process.execSync('npm install', {
         stdio: [0, 1, 2],
         cwd
     });
 }
 
-export async function update(options: SkemOptions) {
+export async function update(options: SkemOptions): Promise<void> {
     const config = ConfigManager.getConfig();
     const { name } = options;
     if (name) {
@@ -138,7 +138,7 @@ export async function update(options: SkemOptions) {
     }
 }
 
-export async function loopOnSubFoldersAndExtractConfigFromProject(options: SkemOptions) {
+export async function loopOnSubFoldersAndExtractConfigFromProject(options: SkemOptions): Promise<void> {
     const { path } = options;
     console.log('Looping on folders to find configurations');
     const subFolders = FileManager.getNonIgnoredFolderList(path);
@@ -152,7 +152,11 @@ export async function loopOnSubFoldersAndExtractConfigFromProject(options: SkemO
     }
 }
 
-export async function extractConfigFromProject({ path, name, isUpdate }: SkemOptions & { isUpdate?: boolean }) {
+export async function extractConfigFromProject({
+    path,
+    name,
+    isUpdate
+}: SkemOptions & { isUpdate?: boolean }): Promise<void> {
     let configName: string = name || '';
     const isDirectory = FileManager.isDirectory(path);
     if (!name) {
@@ -171,7 +175,7 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
                 const { desiredName } = await inquirer.prompt({
                     name: 'desiredName',
                     type: 'input',
-                    message: `Please choose a name for this configuration:`
+                    message: 'Please choose a name for this configuration:'
                 });
                 configName = desiredName;
             }
@@ -181,7 +185,7 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
         const configs = ConfigManager.getConfig();
         if (configs[configName]) {
             const { confirm } = await inquirer.prompt({
-                type: "confirm",
+                type: 'confirm',
                 name: 'confirm',
                 message: 'There is an existing configuration with this name. Do you want to overwrite it ?'
             });
@@ -200,19 +204,19 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
     const variables = FileManager.getVariables(files);
     if (configName) {
         ConfigManager.addToConfig(configName, {
-                isFile: !isDirectory,
-                name: configName,
-                root,
-                preferredPackageManager,
-                files: isDirectory ? files.map(f => f.replace(root, '')) : [root],
-                variables: {
-                    ...variables,
-                    variablesInFiles: variables.variablesInFiles.map(item => {
-                        item.file = item.file.replace(root, '');
-                        return item;
-                    }),
-                },
-            }
+            isFile: !isDirectory,
+            name: configName,
+            root,
+            preferredPackageManager,
+            files: isDirectory ? files.map(f => f.replace(root, '')) : [root],
+            variables: {
+                ...variables,
+                variablesInFiles: variables.variablesInFiles.map(item => {
+                    item.file = item.file.replace(root, '');
+                    return item;
+                }),
+            },
+        }
         );
         if (isUpdate) {
             console.log(`    Updated ${colors.cyan(configName)}`);
@@ -228,16 +232,16 @@ export async function extractConfigFromProject({ path, name, isUpdate }: SkemOpt
 
 export async function install(
     options: SkemOptions,
-) {
+): Promise<void> {
     const { path, name } = options;
     const config = await chooseConfiguration(options);
-    let variables: Record<string, string> = {};
+    const variables: Record<string, string> = {};
     console.log(`Installing ${colors.cyan(name)}`);
     if (config.variables.variables.length) {
-        for (let variable of config.variables.variables) {
+        for (const variable of config.variables.variables) {
             while (!variables[variable]) {
                 const { response } = await inquirer.prompt({
-                    type: "input",
+                    type: 'input',
                     message: `Please provide a value for variable "${variable}":`,
                     name: 'response'
                 });
@@ -282,9 +286,9 @@ export async function install(
                 )
             );
         }
-        if (options["install-packages"]) {
+        if (options['install-packages']) {
             const packageJsons = skemConfig.files.filter(f => /package\.json$/.test(f));
-            for (let packageJson of packageJsons) {
+            for (const packageJson of packageJsons) {
                 const newFileName = newRoot + packageJson.replace(/package\.json$/, '');
                 runPackageInstaller(newFileName);
             }
@@ -301,7 +305,7 @@ async function listConfigs() {
     }
     console.log(colors.grey(`Here ${configs.length !== 1 ? 'are' : 'is'} the available config${configs.length !== 1 ? 's' : ''}:`));
     console.log();
-    for (let key of configs) {
+    for (const key of configs) {
         console.log('-', key);
     }
 }
@@ -312,40 +316,40 @@ async function main() {
     } else {
         console.log();
         switch (options.command) {
-            case 'help':
-            case 'h':
-                CommandLineUsage.showHelp(options);
-                break;
-            case 'install':
-            case 'i':
-            case 'generate':
-            case 'g':
-                await install(options);
-                break;
-            case 'add':
-            case 'a':
-                if (options.repo) {
-                    await loopOnSubFoldersAndExtractConfigFromProject(options);
-                } else {
-                    await extractConfigFromProject(options);
-                }
-                break;
-            case 'remove':
-            case 'rm':
-                await ConfigManager.removeFromConfig(options);
-                break;
-            case 'list':
-            case 'ls':
-                await listConfigs();
-                break;
-            case 'print':
-            case 'p':
-                await ConfigManager.printConfig(options);
-                break;
-            case 'update':
-            case 'u':
-                await update(options);
-                break;
+        case 'help':
+        case 'h':
+            CommandLineUsage.showHelp(options);
+            break;
+        case 'install':
+        case 'i':
+        case 'generate':
+        case 'g':
+            await install(options);
+            break;
+        case 'add':
+        case 'a':
+            if (options.repo) {
+                await loopOnSubFoldersAndExtractConfigFromProject(options);
+            } else {
+                await extractConfigFromProject(options);
+            }
+            break;
+        case 'remove':
+        case 'rm':
+            await ConfigManager.removeFromConfig(options);
+            break;
+        case 'list':
+        case 'ls':
+            await listConfigs();
+            break;
+        case 'print':
+        case 'p':
+            await ConfigManager.printConfig(options);
+            break;
+        case 'update':
+        case 'u':
+            await update(options);
+            break;
         }
     }
     console.log();
