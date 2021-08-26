@@ -1,6 +1,5 @@
 import fs from 'fs';
 import Path from 'path';
-import { SkemVariables } from './config-manager';
 
 import gitignoreParser from '@gerhobbelt/gitignore-parser';
 
@@ -93,44 +92,6 @@ export class FileManager {
             return 0;
         });
         return { files, preferredPackageManager: currentPreferredPackageManager || 'npm' };
-    }
-
-    static getVariables(fileList: string[]): SkemVariables {
-        const variablesInFiles: { file: string, name: string }[] = [];
-        const variables: string[] = [];
-        const fileVariables: Record<number, string[]> = {};
-        for (let i = 0; i < fileList.length; i++) {
-            const fileName = fileList[i];
-            const data = fs.readFileSync(fileName, 'ascii');
-            let matchedVariables = (data.match(/___([a-z0-9-]+)___/ig) || [])
-                .concat(fileName.match(/___([a-z0-9-]+)___/ig) || []);
-            if (matchedVariables.length) {
-                matchedVariables = matchedVariables
-                    .map(v => v.replace(/^___([a-z0-9-]+)___$/i, '$1'))
-                    .reduce((agg: string[], curr) => {
-                        if (!agg.some(item => item === curr)) {
-                            agg.push(curr);
-                        }
-                        return agg;
-                    }, []);
-                const currentFileUniqueVariables: string[] = [];
-                for (const variable of matchedVariables) {
-                    if (!currentFileUniqueVariables.some(v => v === variable)) {
-                        currentFileUniqueVariables.push(variable);
-                    }
-                    variablesInFiles.push({ file: fileName, name: variable });
-                    if (!variables.some(v => v === variable)) {
-                        variables.push(variable);
-                    }
-                }
-                fileVariables[i] = currentFileUniqueVariables;
-            }
-        }
-        return {
-            variables,
-            variablesInFiles,
-            fileVariables
-        };
     }
 
     static writeFileSync(fileName: string, content: string): void {

@@ -1,5 +1,5 @@
 import commandLineUsage, { Section } from 'command-line-usage';
-import { SkemOptions } from './index';
+import { SkemOptions } from './command-line-args';
 
 export type Commands =
     | 'help' | 'h'
