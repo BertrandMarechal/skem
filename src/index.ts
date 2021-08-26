@@ -72,21 +72,25 @@ const options: SkemOptions = commandLineArgs([
 
 export async function chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemConfig> {
     const configs = ConfigManager.getConfig();
-    if (name) {
-        if (!configs[name]) {
-            console.error(`Unknown configuration: ${name}`);
-            process.exit(1);
-        }
-        return configs[name];
-    }
-    let configName: string = "";
     if (Object.keys(configs).length === 0) {
         console.error('Could not find any config. Try to add one with "skem add".');
         process.exit(1);
     }
-    if (Object.keys(configs).length === 1) {
-        configName = Object.keys(configs)[0];
-        console.log(`Selected ${configName} as the only config available.`);
+    let configNames = Object.keys(configs);
+    if (name) {
+        if (configs[name]) {
+            return configs[name];
+        }
+        configNames = configNames.filter(c => c.indexOf(name) > -1);
+        if (configNames.length === 0) {
+            console.error(`Unknown configuration: ${name}`);
+            process.exit(1);
+        }
+    }
+    let configName: string = "";
+    if (Object.keys(configNames).length === 1) {
+        configName = configNames[0];
+        console.log(`Selected ${configName} as the only config available${!!name ? ' with the filter' : ''}.`);
         console.log();
     }
     while (!configName) {
@@ -94,7 +98,7 @@ export async function chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): 
             name: 'choice',
             type: "list",
             message: 'Please choose the configuration you want:',
-            choices: Object.keys(configs)
+            choices: configNames
         });
         configName = choice;
     }
