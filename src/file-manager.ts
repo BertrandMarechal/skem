@@ -2,6 +2,8 @@ import fs from "fs";
 import Path from "path";
 import { SkemVariables } from "./config-manager";
 
+const gitignoreParser = require("@gerhobbelt/gitignore-parser");
+
 const ignoredPaths = [
     'node_modules',
     '.git'
@@ -24,7 +26,8 @@ export class FileManager {
         );
     }
 
-    static getFileList(path: string): { files: string[]; preferredPackageManager: 'npm' | 'yarn'; } {
+    static getFileList(path: string, parentGitIgnores: { gitignore: any, root: string }[] = []): { files: string[]; preferredPackageManager: 'npm' | 'yarn'; } {
+        const gitIgnores = [...parentGitIgnores];
         let currentPreferredPackageManager: 'npm' | 'yarn' | '' = "";
         if (!this.isDirectory(path)) {
             return {
@@ -33,6 +36,13 @@ export class FileManager {
             };
         }
         let files = fs.readdirSync(path);
+        const hasGitignoreFile = files.some(f => f === '.gitignore');
+        if (hasGitignoreFile) {
+            gitIgnores.push({
+                gitignore: gitignoreParser.compile(fs.readFileSync(Path.resolve(path, '.gitignore'), 'utf8')),
+                root: Path.resolve(path)
+            });
+        }
         for (const file of files) {
             if (file === 'package-lock.json') {
                 currentPreferredPackageManager = 'npm';
@@ -43,6 +53,16 @@ export class FileManager {
         files = files
             .filter(fileName => {
                 const realFileName = Path.resolve(path, fileName);
+                for (const { root, gitignore } of gitIgnores) {
+                    const denied = gitignore.denies(
+                        realFileName
+                            .replace(root + '\\', '')
+                            .replace(/\\/g, '/')
+                    );
+                    if (denied) {
+                        return false;
+                    }
+                }
                 if (this.isDirectory(realFileName)) {
                     return !ignoredPaths.some(p => p === fileName);
                 }
@@ -55,7 +75,7 @@ export class FileManager {
         for (const file of files) {
             if (this.isDirectory(file)) {
                 directories.push(file);
-                const { files, preferredPackageManager } = this.getFileList(file);
+                const { files, preferredPackageManager } = this.getFileList(file, gitIgnores);
                 if (!currentPreferredPackageManager) {
                     currentPreferredPackageManager = preferredPackageManager;
                 }
