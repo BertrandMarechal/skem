@@ -5,7 +5,7 @@ import { chooseConfiguration, SkemOptions } from './index';
 import inquirer from 'inquirer';
 import colors from 'colors';
 
-const localDBFile = path.resolve(__dirname, './db/db.json');
+const localDBFile = path.resolve(__dirname, '../db/db.json');
 
 export interface SkemVariables {
     variables: string[];
@@ -31,7 +31,7 @@ export class ConfigManager {
             const data = fs.readFileSync(localDBFile, 'ascii');
             return JSON.parse(data);
         } catch (e) {
-            FileManager.writeFileSync(localDBFile, JSON.stringify({}, null, 2));
+            FileManager.writeFileSync(localDBFile, JSON.stringify({}));
             return {};
         }
     }
@@ -39,14 +39,14 @@ export class ConfigManager {
     static addToConfig(configName: string, config: SkemConfig): void {
         const currentConfig = this.getConfig();
         currentConfig[configName] = config;
-        FileManager.writeFileSync(localDBFile, JSON.stringify(currentConfig, null, 2));
+        FileManager.writeFileSync(localDBFile, JSON.stringify(currentConfig));
     }
 
-    static async removeFromConfig({ name }: SkemOptions): Promise<void> {
+    static async removeFromConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
         const currentConfig = this.getConfig();
         if (name) {
             delete currentConfig[name];
-            FileManager.writeFileSync(localDBFile, JSON.stringify(currentConfig, null, 2));
+            FileManager.writeFileSync(localDBFile, JSON.stringify(currentConfig));
             console.log(`Configuration cleared for ${name}`);
         } else {
             const { all } = await inquirer.prompt({
@@ -55,7 +55,7 @@ export class ConfigManager {
                 message: 'Do you want to remove all configurations ?'
             });
             if (all) {
-                FileManager.writeFileSync(localDBFile, JSON.stringify({}, null, 2));
+                FileManager.writeFileSync(localDBFile, JSON.stringify({}));
                 console.log('Configuration cleared');
             }
         }

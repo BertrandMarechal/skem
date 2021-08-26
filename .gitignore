@@ -1,5 +1,7 @@
 /node_modules/
 /schematics/**/*.js
+/tests/**/*.js
+/src/**/*.js
 /dist/
 /.idea/
 /db/
