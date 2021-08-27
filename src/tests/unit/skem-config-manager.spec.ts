@@ -50,4 +50,55 @@ describe('skem-config-manager', function () {
             expect(skemConfigManager.name).toEqual('');
         });
     });
+    describe('name', () => {
+        it('returns the name provided in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({ name: 'blueprint' }));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.name).toEqual('blueprint');
+        });
+        it('returns "" if no name provided in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({ }));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.name).toEqual('');
+        });
+    });
+    describe('isSingleFiles', () => {
+        it('returns true if singleFile is provided in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({ singleFile: 'blueprint' }));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.isSingleFiles).toEqual(true);
+        });
+        it('returns false if singleFile is not provided in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({}));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.isSingleFiles).toEqual(false);
+        });
+    });
+    describe('_validateConfig', () => {
+        it('should not allow singleFile and singleFiles', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({
+                    singleFile: 'singleFile',
+                    singleFiles: [{ name: 'singleFile1', file: 'singleFile1' }],
+                }));
+            const exitSpy = jest.spyOn(process, 'exit')
+                .mockImplementationOnce(jest.fn());
+
+            new SkemConfigManager('fileName');
+
+            expect(exitSpy).toHaveBeenCalledWith(1);
+        });
+    });
 });

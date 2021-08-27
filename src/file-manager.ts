@@ -28,14 +28,10 @@ export class FileManager {
         );
     }
 
-    static getFileList(path: string, parentGitIgnores: { gitignore: unknown, root: string }[] = []): { files: string[]; preferredPackageManager: 'npm' | 'yarn'; } {
+    static getFileList(path: string, parentGitIgnores: { gitignore: unknown, root: string }[] = []): string[] {
         const gitIgnores = [...parentGitIgnores];
-        let currentPreferredPackageManager: 'npm' | 'yarn' | '' = '';
         if (!this.isDirectory(path)) {
-            return {
-                files: [path],
-                preferredPackageManager: 'npm'
-            };
+            return [path];
         }
         let files = fs.readdirSync(path);
         const hasGitignoreFile = files.some(f => f === '.gitignore');
@@ -44,13 +40,6 @@ export class FileManager {
                 gitignore: gitignoreParser.compile(fs.readFileSync(Path.resolve(path, '.gitignore'), 'utf8')),
                 root: Path.resolve(path)
             });
-        }
-        for (const file of files) {
-            if (file === 'package-lock.json') {
-                currentPreferredPackageManager = 'npm';
-            } else if (file === 'yarn.lock') {
-                currentPreferredPackageManager = 'yarn';
-            }
         }
         files = files
             .filter(fileName => {
@@ -77,10 +66,7 @@ export class FileManager {
         for (const file of files) {
             if (this.isDirectory(file)) {
                 directories.push(file);
-                const { files, preferredPackageManager } = this.getFileList(file, gitIgnores);
-                if (!currentPreferredPackageManager) {
-                    currentPreferredPackageManager = preferredPackageManager;
-                }
+                const files = this.getFileList(file, gitIgnores);
                 extraFiles.push(...files);
             }
         }
@@ -94,7 +80,7 @@ export class FileManager {
             }
             return 0;
         });
-        return { files, preferredPackageManager: currentPreferredPackageManager || 'npm' };
+        return files;
     }
 
     static writeFileSync(fileName: string, content: string): void {

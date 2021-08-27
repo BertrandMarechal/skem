@@ -20,7 +20,6 @@ export interface SkemBlueprint {
     isFile: boolean;
     root: string;
     name: string;
-    preferredPackageManager: 'npm' | 'yarn';
     files: string[];
     variables: SkemVariables;
 }

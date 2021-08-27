@@ -77,13 +77,26 @@ export class Skem {
     }
 
     async extractConfigFromProject(
-        { path, name, isUpdate, folderNameFromLoop }: SkemOptions & { isUpdate?: boolean, folderNameFromLoop?: string }
+        { path, name, isUpdate, folderNameFromLoop }: Pick<SkemOptions, 'path' | 'name'> & { isUpdate?: boolean, folderNameFromLoop?: string }
     ): Promise<void> {
         let configName: string = name || '';
+        let skemConfig: SkemConfigManager | undefined;
         const isDirectory = FileManager.isDirectory(path);
+
         if (isDirectory) {
             if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
-                const skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
+                skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
+                if(skemConfig.isSingleFiles) {
+                    const singleBlueprints = skemConfig.singleFiles;
+                    for (const singleBlueprint of singleBlueprints) {
+                        await this.extractConfigFromProject({
+                            path: Path.resolve(path, singleBlueprint.file),
+                            name: singleBlueprint.name || '',
+                            isUpdate,
+                        });
+                    }
+                    return;
+                }
                 if (!configName && !!skemConfig.name) {
                     configName = skemConfig.name;
                 }
@@ -111,7 +124,7 @@ export class Skem {
             console.log(`    Adding ${colors.cyan(configName)}`);
         }
         const root = Path.resolve(path);
-        const { files, preferredPackageManager } = FileManager.getFileList(root);
+        const files = FileManager.getFileList(root);
         const variables = VariableManager.getVariables(files);
         if (configName) {
             this.configManager.addToConfig(configName,
@@ -119,7 +132,6 @@ export class Skem {
                     isFile: !isDirectory,
                     name: configName,
                     root,
-                    preferredPackageManager,
                     files: isDirectory ? files.map(f => f.replace(root, '')) : [root],
                     variables: {
                         ...variables,

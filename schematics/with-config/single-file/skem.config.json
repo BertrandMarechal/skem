@@ -1,3 +1,4 @@
 {
-  "name": "jest-test"
+  "name": "jest-test",
+  "singleFile": "___test-name___.spec.ts"
 }
