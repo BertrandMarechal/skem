@@ -17,6 +17,9 @@ export class FileManager {
     static isDirectory(path: string): boolean {
         return fs.lstatSync(path).isDirectory();
     }
+    static exists(path: string): boolean {
+        return fs.existsSync(path);
+    }
 
     static getNonIgnoredFolderList(path: string): string[] {
         const files = fs.readdirSync(path);

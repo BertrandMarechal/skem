@@ -6,6 +6,7 @@ import { VariableManager } from './variable-manager';
 import { FileManager } from './file-manager';
 import child_process from 'child_process';
 import { UserInterface } from './user-interface';
+import { CONFIGURATION_FILE_NAME, SkemConfigManager } from './skem-config-manager';
 
 export class Skem {
     configManager: BlueprintManager;
@@ -76,11 +77,22 @@ export class Skem {
     }
 
     async extractConfigFromProject(
-        { path, name, isUpdate }: SkemOptions & { isUpdate?: boolean }
+        { path, name, isUpdate, folderNameFromLoop }: SkemOptions & { isUpdate?: boolean, folderNameFromLoop?: string }
     ): Promise<void> {
         let configName: string = name || '';
         const isDirectory = FileManager.isDirectory(path);
-        if (!name) {
+        if (isDirectory) {
+            if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
+                const skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
+                if (!configName && !!skemConfig.name) {
+                    configName = skemConfig.name;
+                }
+            }
+        }
+        if (!configName && folderNameFromLoop) {
+            configName = folderNameFromLoop;
+        }
+        if (!configName) {
             if (isDirectory) {
                 configName = await UserInterface.overwriteFolderNameForBlueprint(configName);
             } else {
@@ -124,7 +136,7 @@ export class Skem {
                 console.log(`    Added ${colors.cyan(configName)}`);
             }
             console.log();
-            if (!isUpdate) {
+            if (!isUpdate && !folderNameFromLoop) {
                 await this.configManager.printConfig({ name: configName });
             }
         }
@@ -139,7 +151,7 @@ export class Skem {
             await this.extractConfigFromProject({
                 ...options,
                 path: Path.resolve(path, subFolder),
-                name: subFolder
+                folderNameFromLoop: subFolder
             });
         }
     }
