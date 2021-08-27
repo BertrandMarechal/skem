@@ -1,0 +1,11 @@
+{
+  "singleFiles": [
+    {
+      "file": "___test-name___.spec.ts",
+      "name": "other-test"
+    },
+    {
+      "file": "___test-name___.spec.ts"
+    }
+  ]
+}

@@ -23,11 +23,13 @@ export class SkemConfigManager {
         try {
             const fileContent = fs.readFileSync(configFileName, 'ascii');
             if (!fileContent) {
+                console.error(`File "${this._fileName}" is empty.`);
                 return;
             }
             try {
                 this._config = JSON.parse(fileContent);
             } catch {
+                console.error(`Invalid JSON in "${this._fileName}".`);
                 return;
             }
         } catch {

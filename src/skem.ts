@@ -115,7 +115,7 @@ export class Skem {
         if (!isUpdate) {
             const configs = this.configManager.config;
             if (configs[configName]) {
-                await UserInterface.confirmOverwriteOfBlueprintOrExit();
+                await UserInterface.confirmOverwriteOfBlueprintOrExit(configName);
             }
         }
         if (isUpdate) {
@@ -148,9 +148,6 @@ export class Skem {
                 console.log(`    Added ${colors.cyan(configName)}`);
             }
             console.log();
-            if (!isUpdate && !folderNameFromLoop) {
-                await this.configManager.printConfig({ name: configName });
-            }
         }
     }
 
