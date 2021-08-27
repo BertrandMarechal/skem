@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals';
+import { jest } from '@jest/globals';
 
 const mockFS = {
     readFileSync: jest.fn(),
@@ -11,20 +11,23 @@ const mockFileManager = {
 };
 jest.mock('fs', () => mockFS);
 jest.mock('inquirer', () => mockInquirer);
-jest.mock('../../src/file-manager', () => ({FileManager: mockFileManager}));
+jest.mock('../../file-manager', () => ({ FileManager: mockFileManager }));
 
 import path from 'path';
 
 const localDBFile = path.resolve('./db/db.json');
-import {ConfigManager} from '../../src/config-manager';
+import { ConfigManager } from '../../config-manager';
 
 describe('config-manager', function () {
-    describe('getConfig', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+    describe('constructor', () => {
         it('should read and return the file if found and valid', () => {
             const readFileSyncSpy = jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config": {}}');
 
-            ConfigManager.getConfig();
+            new ConfigManager();
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
         });
@@ -35,7 +38,7 @@ describe('config-manager', function () {
                 });
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            ConfigManager.getConfig();
+            new ConfigManager();
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).toHaveBeenCalledWith(localDBFile, '{}');
@@ -45,10 +48,30 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{config: {}}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            ConfigManager.getConfig();
+            new ConfigManager();
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).toHaveBeenCalledWith(localDBFile, '{}');
+        });
+    });
+    describe('config', () => {
+        it('should return the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => '{"config": {}}');
+
+            const configManager = new ConfigManager();
+
+            expect(configManager.config.config).toBeTruthy();
+        });
+    });
+    describe('configNames', () => {
+        it('should return the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => '{"config": {}}');
+
+            const configManager = new ConfigManager();
+
+            expect(configManager.configNames[0]).toEqual('config');
         });
     });
     describe('addToConfig', () => {
@@ -57,7 +80,9 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            ConfigManager.addToConfig('config',
+            const configManager = new ConfigManager();
+
+            configManager.addToConfig('config',
                 {
                     files: [],
                     isFile: false,
@@ -90,15 +115,13 @@ describe('config-manager', function () {
         });
     });
     describe('removeFromConfig', () => {
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
         it('should remove the one config passed as parameter', async () => {
             const readFileSyncSpy = jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config":{}}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            await ConfigManager.removeFromConfig({name: 'config'});
+            const configManager = new ConfigManager();
+            await configManager.removeFromConfig({ name: 'config' });
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).toHaveBeenCalledWith(localDBFile, '{}');
@@ -108,9 +131,10 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{"config":{},"config2":{}}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
             const promptSpy = jest.spyOn(mockInquirer, 'prompt')
-                .mockImplementationOnce(async () => ({all: true}));
+                .mockImplementationOnce(async () => ({ all: true }));
 
-            await ConfigManager.removeFromConfig({name: ''});
+            const configManager = new ConfigManager();
+            await configManager.removeFromConfig({ name: '' });
 
             expect(promptSpy).toHaveBeenCalledTimes(1);
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
@@ -121,33 +145,38 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{"config":{},"config2":{}}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
             const promptSpy = jest.spyOn(mockInquirer, 'prompt')
-                .mockImplementationOnce(async () => ({all: false}));
+                .mockImplementationOnce(async () => ({ all: false }));
 
-            await ConfigManager.removeFromConfig({name: ''});
+            const configManager = new ConfigManager();
+            await configManager.removeFromConfig({ name: '' });
 
             expect(promptSpy).toHaveBeenCalled();
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).not.toHaveBeenCalledWith(localDBFile, '{}');
         });
     });
-    describe('doesConfigExist', () => {
-        it('should return true if it exists', () => {
-            const readFileSyncSpy = jest.spyOn(mockFS, 'readFileSync')
+    describe('exitIfConfigDoesNotExist', () => {
+        it('should not exit if it exists', () => {
+            jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config":{}}');
+            const exitSpy = jest.spyOn(process, 'exit')
+                .mockImplementationOnce(jest.fn());
 
-            const response = ConfigManager.doesConfigExist('config');
+            const configManager = new ConfigManager();
+            configManager.exitIfConfigDoesNotExist('config');
 
-            expect(response).toEqual(true);
-            expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
+            expect(exitSpy).not.toHaveBeenCalled();
         });
-        it('should return false if it does not exist', () => {
-            const readFileSyncSpy = jest.spyOn(mockFS, 'readFileSync')
+        it('should exit if it does not exists', () => {
+            jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config":{}}');
+            const exitSpy = jest.spyOn(process, 'exit')
+                .mockImplementationOnce(jest.fn());
 
-            const response = ConfigManager.doesConfigExist('otherConfig');
+            const configManager = new ConfigManager();
+            configManager.exitIfConfigDoesNotExist('otherConfig');
 
-            expect(response).toEqual(false);
-            expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
+            expect(exitSpy).toHaveBeenCalledWith(1);
         });
     });
 });

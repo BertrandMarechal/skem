@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import {FileManager} from './file-manager';
+import { FileManager } from './file-manager';
 import colors from 'colors';
-import {SkemOptions} from './command-line-args';
-import {UserInterface} from './user-interface';
+import { SkemOptions } from './command-line-args';
+import { UserInterface } from './user-interface';
 
 const localDBFile = path.resolve(__dirname, '../db/db.json');
 
@@ -27,6 +27,7 @@ export interface SkemConfig {
 
 export class ConfigManager {
     private _config: Record<string, SkemConfig>;
+
     constructor() {
         this._config = {};
         try {
@@ -44,7 +45,6 @@ export class ConfigManager {
     get configNames(): string[] {
         return Object.keys(this._config);
     }
-
 
     async chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemConfig> {
         if (this.configNames.length === 0) {
@@ -72,8 +72,8 @@ export class ConfigManager {
         return this.config[configName];
     }
 
-    async printConfig({name}: Pick<SkemOptions, 'name'>): Promise<void> {
-        const config = await this.chooseConfiguration({name});
+    async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
+        const config = await this.chooseConfiguration({ name });
         let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
         summary += `\n    ${colors.grey('Root')}: ${config.root}`;
         if (!config.isFile) {
@@ -90,16 +90,6 @@ export class ConfigManager {
         }
         console.log(summary);
 
-    }
-
-    static getConfig(): Record<string, SkemConfig> {
-        try {
-            const data = fs.readFileSync(localDBFile, 'ascii');
-            return JSON.parse(data);
-        } catch (e) {
-            FileManager.writeFileSync(localDBFile, JSON.stringify({}));
-            return {};
-        }
     }
 
     addToConfig(configName: string, config: SkemConfig): void {
@@ -122,16 +112,15 @@ export class ConfigManager {
         }
     }
 
-    private _updateConfigInFile() {
-        FileManager.writeFileSync(localDBFile, JSON.stringify(this._config));
-    }
-
-    static exitIfConfigDoesNotExist(name: string): void {
-        const currentConfig = this.getConfig();
-        if (!currentConfig[name]) {
+    exitIfConfigDoesNotExist(name: string): void {
+        if (!this.config[name]) {
             console.error(`Unknown configuration: ${name}`);
             process.exit(1);
         }
 
+    }
+
+    private _updateConfigInFile() {
+        FileManager.writeFileSync(localDBFile, JSON.stringify(this._config));
     }
 }

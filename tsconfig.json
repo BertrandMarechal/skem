@@ -65,6 +65,6 @@
   },
   "exclude": [
     "schematics",
-    "tests"
+    "src/tests"
   ]
 }

@@ -86,7 +86,7 @@ export class Skem {
             }
         }
         if (!isUpdate) {
-            const configs = ConfigManager.getConfig();
+            const configs = this.configManager.config;
             if (configs[configName]) {
                 await UserInterface.confirmOverwriteOfBlueprintOrExit();
             }
@@ -145,7 +145,7 @@ export class Skem {
     async update(options: SkemOptions): Promise<void> {
         const { name } = options;
         if (name) {
-            ConfigManager.exitIfConfigDoesNotExist(name);
+            this.configManager.exitIfConfigDoesNotExist(name);
             await this.extractConfigFromProject({
                 ...options,
                 path: this.configManager.config[name].root,
