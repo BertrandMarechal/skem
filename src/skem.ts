@@ -9,14 +9,16 @@ import {UserInterface} from './user-interface';
 
 export class Skem {
     configManager: ConfigManager;
+    variableManager: VariableManager;
 
     constructor() {
         this.configManager = new ConfigManager();
+        this.variableManager = new VariableManager();
     }
 
-    async install({path, name}: SkemOptions): Promise<void> {
+    async install({path, name, variables: optionsVariables}: SkemOptions): Promise<void> {
         const config = await this.configManager.chooseConfiguration({name});
-        const variables: Record<string, string> = {};
+        const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
         console.log(`Installing ${colors.cyan(name)}`);
         if (config.variables.variables.length) {
             for (const variable of config.variables.variables) {

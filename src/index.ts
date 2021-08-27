@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import {CommandLineUsage} from './command-line';
-import {CommandLineArgs, SkemOptions} from './command-line-args';
-import {Skem} from './skem';
+import { CommandLineUsage } from './command-line';
+import { CommandLineArgs, SkemOptions } from './command-line-args';
+import { Skem } from './skem';
 
 const skem = new Skem();
 

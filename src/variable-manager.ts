@@ -1,7 +1,26 @@
 import fs from 'fs';
-import {SkemVariables} from './config-manager';
+import { SkemVariables } from './config-manager';
 
 export class VariableManager {
+    parseOptionsVariables(optionVariables: string[]): Record<string, string> {
+        const variables: Record<string, string> = {};
+        for (const optionVariable of optionVariables) {
+            if (!optionVariable) {
+                console.log('Please use variables as follow -v name="the name"');
+                process.exit(1);
+                return {};
+            }
+            const [key, value] = optionVariable.split('=');
+            if (!key || !value) {
+                console.log('Please use variables as follow -v name="the name"');
+                process.exit(1);
+                return {};
+            }
+            variables[key] = value;
+        }
+        return variables;
+    }
+
     static replaceVariableInFileName(path: string, fileVariables: string[], variables: Record<string, string>): string {
         let currentFileName = path;
         for (const fileVariable of fileVariables) {
@@ -10,6 +29,7 @@ export class VariableManager {
         }
         return currentFileName;
     }
+
     static replaceVariablesInFile(path: string, fileVariables: string[], variables: Record<string, string>): string {
         let currentFile = fs.readFileSync(path, 'ascii');
         for (const fileVariable of fileVariables) {

@@ -109,6 +109,11 @@ const help: Record<string, Section[]> = {
                     description: 'Path of the file or folder to install in.',
                     defaultValue: '.'
                 },
+                {
+                    name: 'variable',
+                    alias: 'v',
+                    description: 'Provide a value for a variable (i.e.: -v name="this is a test".',
+                },
             ]
         }
     ],
