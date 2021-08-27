@@ -1,23 +1,23 @@
-import {ConfigManager} from './config-manager';
+import { BlueprintManager } from './blueprint-manager';
 import colors from 'colors';
-import {SkemOptions} from './command-line-args';
+import { SkemOptions } from './command-line-args';
 import Path from 'path';
-import {VariableManager} from './variable-manager';
-import {FileManager} from './file-manager';
+import { VariableManager } from './variable-manager';
+import { FileManager } from './file-manager';
 import child_process from 'child_process';
-import {UserInterface} from './user-interface';
+import { UserInterface } from './user-interface';
 
 export class Skem {
-    configManager: ConfigManager;
+    configManager: BlueprintManager;
     variableManager: VariableManager;
 
     constructor() {
-        this.configManager = new ConfigManager();
+        this.configManager = new BlueprintManager();
         this.variableManager = new VariableManager();
     }
 
-    async install({path, name, variables: optionsVariables}: SkemOptions): Promise<void> {
-        const config = await this.configManager.chooseConfiguration({name});
+    async install({ path, name, variables: optionsVariables }: SkemOptions): Promise<void> {
+        const config = await this.configManager.chooseConfiguration({ name });
         const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
         console.log(`Installing ${colors.cyan(name)}`);
         if (config.variables.variables.length) {
@@ -76,7 +76,7 @@ export class Skem {
     }
 
     async extractConfigFromProject(
-        {path, name, isUpdate}: SkemOptions & { isUpdate?: boolean }
+        { path, name, isUpdate }: SkemOptions & { isUpdate?: boolean }
     ): Promise<void> {
         let configName: string = name || '';
         const isDirectory = FileManager.isDirectory(path);
@@ -99,7 +99,7 @@ export class Skem {
             console.log(`    Adding ${colors.cyan(configName)}`);
         }
         const root = Path.resolve(path);
-        const {files, preferredPackageManager} = FileManager.getFileList(root);
+        const { files, preferredPackageManager } = FileManager.getFileList(root);
         const variables = VariableManager.getVariables(files);
         if (configName) {
             this.configManager.addToConfig(configName,
@@ -111,7 +111,7 @@ export class Skem {
                     files: isDirectory ? files.map(f => f.replace(root, '')) : [root],
                     variables: {
                         ...variables,
-                        variablesInFiles: variables.variablesInFiles.map(item => {
+                        variablesInFiles: variables.variablesInFiles.map((item) => {
                             item.file = item.file.replace(root, '');
                             return item;
                         }),
@@ -125,7 +125,7 @@ export class Skem {
             }
             console.log();
             if (!isUpdate) {
-                await this.configManager.printConfig({name: configName});
+                await this.configManager.printConfig({ name: configName });
             }
         }
     }
@@ -179,12 +179,12 @@ export class Skem {
         }
     }
 
-    async removeFromConfig({name}: Pick<SkemOptions, 'name'>): Promise<void> {
-        await this.configManager.removeFromConfig({name});
+    async removeFromConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
+        await this.configManager.removeFromConfig({ name });
     }
 
-    async printConfig({name}: Pick<SkemOptions, 'name'>): Promise<void> {
-        await this.configManager.printConfig({name});
+    async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
+        await this.configManager.printConfig({ name });
     }
 
     private runPackageInstaller(cwd: string): void {

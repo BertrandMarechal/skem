@@ -16,9 +16,9 @@ jest.mock('../../file-manager', () => ({ FileManager: mockFileManager }));
 import path from 'path';
 
 const localDBFile = path.resolve('./db/db.json');
-import { ConfigManager } from '../../config-manager';
+import { BlueprintManager } from '../../blueprint-manager';
 
-describe('config-manager', function () {
+describe('blueprint-manager', function () {
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -27,7 +27,7 @@ describe('config-manager', function () {
             const readFileSyncSpy = jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config": {}}');
 
-            new ConfigManager();
+            new BlueprintManager();
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
         });
@@ -38,7 +38,7 @@ describe('config-manager', function () {
                 });
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            new ConfigManager();
+            new BlueprintManager();
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).toHaveBeenCalledWith(localDBFile, '{}');
@@ -48,7 +48,7 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{config: {}}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            new ConfigManager();
+            new BlueprintManager();
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).toHaveBeenCalledWith(localDBFile, '{}');
@@ -59,7 +59,7 @@ describe('config-manager', function () {
             jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config": {}}');
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
 
             expect(configManager.config.config).toBeTruthy();
         });
@@ -69,7 +69,7 @@ describe('config-manager', function () {
             jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => '{"config": {}}');
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
 
             expect(configManager.configNames[0]).toEqual('config');
         });
@@ -80,7 +80,7 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
 
             configManager.addToConfig('config',
                 {
@@ -120,7 +120,7 @@ describe('config-manager', function () {
                 .mockImplementationOnce(() => '{"config":{}}');
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
             await configManager.removeFromConfig({ name: 'config' });
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
@@ -133,7 +133,7 @@ describe('config-manager', function () {
             const promptSpy = jest.spyOn(mockInquirer, 'prompt')
                 .mockImplementationOnce(async () => ({ all: true }));
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
             await configManager.removeFromConfig({ name: '' });
 
             expect(promptSpy).toHaveBeenCalledTimes(1);
@@ -147,7 +147,7 @@ describe('config-manager', function () {
             const promptSpy = jest.spyOn(mockInquirer, 'prompt')
                 .mockImplementationOnce(async () => ({ all: false }));
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
             await configManager.removeFromConfig({ name: '' });
 
             expect(promptSpy).toHaveBeenCalled();
@@ -162,7 +162,7 @@ describe('config-manager', function () {
             const exitSpy = jest.spyOn(process, 'exit')
                 .mockImplementationOnce(jest.fn());
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
             configManager.exitIfConfigDoesNotExist('config');
 
             expect(exitSpy).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe('config-manager', function () {
             const exitSpy = jest.spyOn(process, 'exit')
                 .mockImplementationOnce(jest.fn());
 
-            const configManager = new ConfigManager();
+            const configManager = new BlueprintManager();
             configManager.exitIfConfigDoesNotExist('otherConfig');
 
             expect(exitSpy).toHaveBeenCalledWith(1);

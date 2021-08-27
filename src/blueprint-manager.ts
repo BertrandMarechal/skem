@@ -16,7 +16,7 @@ export interface SkemVariables {
     fileVariables: Record<string, string[]>;
 }
 
-export interface SkemConfig {
+export interface SkemBlueprint {
     isFile: boolean;
     root: string;
     name: string;
@@ -25,8 +25,8 @@ export interface SkemConfig {
     variables: SkemVariables;
 }
 
-export class ConfigManager {
-    private _config: Record<string, SkemConfig>;
+export class BlueprintManager {
+    private _config: Record<string, SkemBlueprint>;
 
     constructor() {
         this._config = {};
@@ -38,7 +38,7 @@ export class ConfigManager {
         }
     }
 
-    get config(): Record<string, SkemConfig> {
+    get config(): Record<string, SkemBlueprint> {
         return this._config;
     }
 
@@ -46,7 +46,7 @@ export class ConfigManager {
         return Object.keys(this._config);
     }
 
-    async chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemConfig> {
+    async chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemBlueprint> {
         if (this.configNames.length === 0) {
             console.error('Could not find any config. Try to add one with "skem add".');
             process.exit(1);
@@ -92,7 +92,7 @@ export class ConfigManager {
 
     }
 
-    addToConfig(configName: string, config: SkemConfig): void {
+    addToConfig(configName: string, config: SkemBlueprint): void {
         this._config[configName] = config;
         this._updateConfigInFile();
     }

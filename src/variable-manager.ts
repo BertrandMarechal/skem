@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { SkemVariables } from './config-manager';
+import { SkemVariables } from './blueprint-manager';
 
 export class VariableManager {
     parseOptionsVariables(optionVariables: string[]): Record<string, string> {
