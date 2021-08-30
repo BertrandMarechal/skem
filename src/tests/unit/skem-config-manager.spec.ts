@@ -61,7 +61,7 @@ describe('skem-config-manager', function () {
         });
         it('returns "" if no name provided in the config', () => {
             jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({ }));
+                .mockImplementationOnce(() => JSON.stringify({}));
 
             const skemConfigManager = new SkemConfigManager('fileName');
 
@@ -84,6 +84,34 @@ describe('skem-config-manager', function () {
             const skemConfigManager = new SkemConfigManager('fileName');
 
             expect(skemConfigManager.isSingleFiles).toEqual(false);
+        });
+    });
+    describe('getFileNameVariableWrapper', () => {
+        it('should return the default if fileNameVariableWrapper not provided', () => {
+            expect(SkemConfigManager.getFileNameVariableWrapper({})).toEqual(['___', '___']);
+        });
+        it('should return the provided one if fileNameVariableWrapper provided', () => {
+            expect(SkemConfigManager.getFileNameVariableWrapper({ fileNameVariableWrapper: '{{{}}}' })).toEqual(['{{{', '}}}']);
+        });
+    });
+    describe('getVariableWrapper', () => {
+        it('should return the default if no variableWrapper(s) not provided', () => {
+            expect(SkemConfigManager.getVariableWrapper('', {})).toEqual(['___', '___']);
+        });
+        it('should return the variableWrapper if no variableWrappers not provided', () => {
+            expect(SkemConfigManager.getVariableWrapper('', { variableWrapper: '{{{}}}' })).toEqual(['{{{', '}}}']);
+        });
+        it('should return the variableWrapper if no variableWrappers match', () => {
+            expect(SkemConfigManager.getVariableWrapper('js', {
+                variableWrapper: '{{{}}}',
+                variableWrappers: [{ wrapper: '<<<>>>', extension: 'json' }]
+            })).toEqual(['{{{', '}}}']);
+        });
+        it('should return the correct variableWrapper if it match', () => {
+            expect(SkemConfigManager.getVariableWrapper('json', {
+                variableWrapper: '{{{}}}',
+                variableWrappers: [{ wrapper: '<<<>>>', extension: 'json' }]
+            })).toEqual(['<<<', '>>>']);
         });
     });
     describe('_validateConfig', () => {

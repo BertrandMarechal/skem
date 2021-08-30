@@ -119,8 +119,15 @@ To hold information about the blueprint or the repository of blueprints, you can
 - `singleFile`: <string> Tells the blueprint is composed of a single file.
 This value is to set to the file path relative to the config file.
 This option is incompatible with `singleFiles`.
-- `singleFiles`: {file: string, name?: string}[] Array containing a list of files and blueprint names attached to the files.
+- `singleFiles`: {file: string, name?: string}[] Array containing a list of files and blueprint names attached to the
+files.
 Use this option if your folder holds a collection of files to be used individually.
+- `variableWrapper`: <string> Overwrites the variable wrapper with the one provided.
+The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
+- `variableWrapper`: {wrapper: string, extension: string}[] Array defining the wrappers to use per file type (identified
+by their extensions. This helps with trying to keep a valid syntax whilst working with different file types.
+- `fileNameVariableWrapper`: <string> Overwrites the variable wrapper with the one provided only for file names.
+The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
 
 ### Examples
 

@@ -4,6 +4,7 @@ import { FileManager } from './file-manager';
 import colors from 'colors';
 import { SkemOptions } from './command-line-args';
 import { UserInterface } from './user-interface';
+import { SkemConfigWrappers } from './skem-config-manager';
 
 const localDBFile = path.resolve(__dirname, '../db/db.json');
 
@@ -16,7 +17,7 @@ export interface SkemVariables {
     fileVariables: Record<string, string[]>;
 }
 
-export interface SkemBlueprint {
+export interface SkemBlueprint extends SkemConfigWrappers {
     isFile: boolean;
     root: string;
     name: string;

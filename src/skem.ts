@@ -6,7 +6,7 @@ import { VariableManager } from './variable-manager';
 import { FileManager } from './file-manager';
 import child_process from 'child_process';
 import { UserInterface } from './user-interface';
-import { CONFIGURATION_FILE_NAME, SkemConfigManager } from './skem-config-manager';
+import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
 
 export class Skem {
     configManager: BlueprintManager;
@@ -32,7 +32,8 @@ export class Skem {
             const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
                 fileName,
                 config.variables.variables,
-                variables
+                variables,
+                SkemConfigManager.getFileNameVariableWrapper(this.configManager.config)
             ));
             console.log(newFileName);
             console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
@@ -41,7 +42,8 @@ export class Skem {
                 VariableManager.replaceVariablesInFile(
                     skemConfig.root,
                     config.variables.variables,
-                    variables
+                    variables,
+                    SkemConfigManager.getVariableWrapper(skemConfig.root, this.configManager.config)
                 )
             );
         } else {
@@ -54,7 +56,8 @@ export class Skem {
                 const newFileName = newRoot + VariableManager.replaceVariableInFileName(
                     fileName,
                     skemConfig.variables.fileVariables[`${i}`] || [],
-                    variables
+                    variables,
+                    SkemConfigManager.getFileNameVariableWrapper(this.configManager.config)
                 );
                 console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
                 FileManager.writeFileSync(
@@ -62,7 +65,8 @@ export class Skem {
                     VariableManager.replaceVariablesInFile(
                         skemConfig.root + fileName,
                         skemConfig.variables.fileVariables[`${i}`] || [],
-                        variables
+                        variables,
+                        SkemConfigManager.getVariableWrapper(skemConfig.root + fileName, this.configManager.config)
                     )
                 );
             }
@@ -82,10 +86,12 @@ export class Skem {
         let configName: string = name || '';
         let skemConfig: SkemConfigManager | undefined;
         const isDirectory = FileManager.isDirectory(path);
+        let skemWrappers: SkemConfigWrappers = {};
 
         if (isDirectory) {
             if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
                 skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
+                skemWrappers = skemConfig.skemWrappers;
                 if(skemConfig.isSingleFiles) {
                     const singleBlueprints = skemConfig.singleFiles;
                     for (const singleBlueprint of singleBlueprints) {
@@ -125,7 +131,7 @@ export class Skem {
         }
         const root = Path.resolve(path);
         const files = FileManager.getFileList(root);
-        const variables = VariableManager.getVariables(files);
+        const variables = VariableManager.getVariables(files, skemWrappers);
         if (configName) {
             this.configManager.addToConfig(configName,
                 {
@@ -140,6 +146,7 @@ export class Skem {
                             return item;
                         }),
                     },
+                    ...skemWrappers,
                 }
             );
             if (isUpdate) {

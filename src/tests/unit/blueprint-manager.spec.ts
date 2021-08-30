@@ -87,7 +87,6 @@ describe('blueprint-manager', function () {
                     files: [],
                     isFile: false,
                     name: '',
-                    preferredPackageManager: 'npm',
                     root: '',
                     variables: {
                         variables: [],
@@ -103,7 +102,6 @@ describe('blueprint-manager', function () {
                     files: [],
                     isFile: false,
                     name: '',
-                    preferredPackageManager: 'npm',
                     root: '',
                     variables: {
                         variables: [],
