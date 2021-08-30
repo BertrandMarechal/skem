@@ -4,6 +4,7 @@
   "description": "Make your projects easier with schematics",
   "skem": "./dist/index.js",
   "scripts": {
+    "build": "tsc",
     "test": "jest"
   },
   "author": "",
