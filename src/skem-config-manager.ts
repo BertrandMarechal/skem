@@ -1,4 +1,6 @@
 import fs from 'fs';
+import Path from 'path';
+import child_process from 'child_process';
 
 export const CONFIGURATION_FILE_NAME = 'skem.config.json';
 export const DEFAULT_VARIABLE_WRAPPER = '______';
@@ -12,7 +14,29 @@ export interface SkemConfigWrappers {
     }[];
 }
 
-export interface SkemConfig extends SkemConfigWrappers {
+export type SkemHookType =
+    | 'post-install'
+    | 'pre-install';
+
+export class SkemHook {
+    type: SkemHookType;
+    command: string;
+    path: string;
+
+    constructor(params: SkemHook) {
+        this.type = params.type;
+        this.command = params.command;
+        this.path = params.path || '.';
+    }
+
+    public isValid(): boolean {
+        return !!this.command && (this.type === 'pre-install' || this.type === 'post-install');
+    }
+}
+export interface SkemHooks {
+    hooks: SkemHook[];
+}
+export interface SkemConfig extends SkemConfigWrappers, SkemHooks {
     name?: string;
     singleFile?: string;
     singleFiles?: {
@@ -38,6 +62,9 @@ export class SkemConfigManager {
             }
             try {
                 this._config = JSON.parse(fileContent);
+                if (this._config) {
+                    this._config.hooks = this._config?.hooks.map(h => new SkemHook(h)) || [];
+                }
             } catch {
                 console.error(`Invalid JSON in "${this._fileName}".`);
                 return;
@@ -86,6 +113,10 @@ export class SkemConfigManager {
         return skemWrappers;
     }
 
+    public get hooks(): SkemHook[] {
+        return this._config?.hooks || [];
+    }
+
     public static getFileNameVariableWrapper(config: SkemConfigWrappers): [string, string] {
         return SkemConfigManager.splitWrapperIn2(config.fileNameVariableWrapper || DEFAULT_VARIABLE_WRAPPER);
     }
@@ -100,6 +131,16 @@ export class SkemConfigManager {
             }
         }
         return SkemConfigManager.splitWrapperIn2(config.variableWrapper || DEFAULT_VARIABLE_WRAPPER);
+    }
+
+    public static runHooks(skemHooks: SkemHook[], type: SkemHookType, root: string): void {
+        const hooks = skemHooks.filter(({type: hookType}) => hookType === type);
+        for (const { command, path } of hooks) {
+            child_process.execSync(command, {
+                stdio: [0, 1, 2],
+                cwd: Path.resolve(root, path)
+            });
+        }
     }
 
     private static splitWrapperIn2(wrapper: string): [string, string] {
@@ -119,6 +160,15 @@ export class SkemConfigManager {
             console.error(`Invalid config in "${this._fileName}": variableWrapper should be of even length. i.e. <<<>>>.`);
             process.exit(1);
         }
+        if (this._config?.hooks.length) {
+            for (const hook of this._config.hooks) {
+                if (!hook.isValid()) {
+                    console.error(`Invalid config in "${this._fileName}": one of the hooks is invalid.`);
+                    process.exit(1);
+                }
+            }
+        }
+
         if (this._config?.variableWrappers) {
             const extensions: string[] = [];
             for (const variableWrapper of this._config.variableWrappers) {
@@ -137,6 +187,6 @@ export class SkemConfigManager {
     }
 
     private static _validateWrapper(wrapper: string): boolean {
-        return wrapper.length%2 === 0;
+        return wrapper.length % 2 === 0;
     }
 }

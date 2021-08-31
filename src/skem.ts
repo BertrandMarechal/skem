@@ -4,9 +4,8 @@ import { SkemOptions } from './command-line-args';
 import Path from 'path';
 import { VariableManager } from './variable-manager';
 import { FileManager } from './file-manager';
-import child_process from 'child_process';
 import { UserInterface } from './user-interface';
-import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
+import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers, SkemHook } from './skem-config-manager';
 
 export class Skem {
     configManager: BlueprintManager;
@@ -29,6 +28,8 @@ export class Skem {
             }
         }
         const skemConfig = config;
+        SkemConfigManager.runHooks(skemConfig.hooks, 'pre-install', path);
+
         if (skemConfig.isFile) {
             const fileName = Path.basename(skemConfig.root);
             const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
@@ -71,14 +72,8 @@ export class Skem {
                     )
                 );
             }
-            // if (options['install-packages']) {
-            //     const packageJsons = skemConfig.files.filter(f => /package\.json$/.test(f));
-            //     for (const packageJson of packageJsons) {
-            //         const newFileName = newRoot + packageJson.replace(/package\.json$/, '');
-            //         runPackageInstaller(newFileName);
-            //     }
-            // }
         }
+        SkemConfigManager.runHooks(skemConfig.hooks, 'post-install', path);
     }
 
     async extractConfigFromProject(
@@ -94,11 +89,13 @@ export class Skem {
         let skemConfig: SkemConfigManager | undefined;
         const isDirectory = FileManager.isDirectory(path);
         let skemWrappers: SkemConfigWrappers = {};
+        let skemHooks: SkemHook[] = [];
 
         if (isDirectory) {
             if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
                 skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
                 skemWrappers = skemConfig.skemWrappers;
+                skemHooks = skemConfig.hooks;
                 if (skemConfig.isSingleFiles) {
                     const singleBlueprints = skemConfig.singleFiles;
                     for (const singleBlueprint of singleBlueprints) {
@@ -168,6 +165,7 @@ export class Skem {
                         }),
                     },
                     ...skemWrappers,
+                    hooks: skemHooks
                 }
             );
             if (isUpdate) {
@@ -234,12 +232,5 @@ export class Skem {
 
     async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
         await this.configManager.printConfig({ name });
-    }
-
-    private runPackageInstaller(cwd: string): void {
-        child_process.execSync('npm install', {
-            stdio: [0, 1, 2],
-            cwd
-        });
     }
 }

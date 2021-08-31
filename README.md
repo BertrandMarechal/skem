@@ -128,6 +128,8 @@ The pattern has to contain both start and end wrappers and those have to be the 
 by their extensions. This helps with trying to keep a valid syntax whilst working with different file types.
 - `fileNameVariableWrapper`: <string> Overwrites the variable wrapper with the one provided only for file names.
 The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
+- `hooks`: {command: string, type?: pre-install | post-install, path?: string}[] Array defining the extra steps to run
+before or after the installation of the blueprint (i.e. `npm i`, `yarn i`).
 
 ### Examples
 

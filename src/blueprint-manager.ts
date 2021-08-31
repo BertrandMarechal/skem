@@ -4,7 +4,7 @@ import { FileManager } from './file-manager';
 import colors from 'colors';
 import { SkemOptions } from './command-line-args';
 import { UserInterface } from './user-interface';
-import { SkemConfigWrappers } from './skem-config-manager';
+import { SkemConfigWrappers, SkemHooks } from './skem-config-manager';
 
 const localDBFile = path.resolve(__dirname, '../db/db.json');
 
@@ -17,7 +17,7 @@ export interface SkemVariables {
     fileVariables: Record<string, string[]>;
 }
 
-export interface SkemBlueprint extends SkemConfigWrappers {
+export interface SkemBlueprint extends SkemConfigWrappers, SkemHooks {
     isFile: boolean;
     root: string;
     name: string;
@@ -79,9 +79,11 @@ export class BlueprintManager {
         let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
         summary += `\n    ${colors.grey('Root')}: ${config.root}`;
         if (!config.isFile) {
-            summary += `\n\n    ${colors.grey('Files')}:`;
-            for (const files of config.files) {
-                summary += `\n        - ${files}`;
+            if (config.files.length) {
+                summary += `\n\n    ${colors.grey('Files')}:`;
+                for (const files of config.files) {
+                    summary += `\n        - ${files}`;
+                }
             }
         } else {
             summary += `\n\n    ${colors.grey('Single File')}`;
@@ -93,14 +95,26 @@ export class BlueprintManager {
             summary += `\n\n    ${colors.grey('Variable wrapper')}: ${config.variableWrapper}`;
         }
         if (config.variableWrappers) {
-            summary += `\n\n    ${colors.grey('Variable wrappers')}:`;
-            for (const { wrapper, extension } of config.variableWrappers) {
-                summary += `\n        - ${wrapper} for "${extension}"`;
+            if (config.variableWrappers.length) {
+                summary += `\n\n    ${colors.grey('Variable wrappers')}:`;
+                for (const { wrapper, extension } of config.variableWrappers) {
+                    summary += `\n        - ${wrapper} for "${extension}"`;
+                }
             }
         }
-        summary += `\n\n    ${colors.grey('Variables')}:`;
-        for (const variable of config.variables.variables) {
-            summary += `\n        - ${variable}`;
+        if (config.hooks) {
+            if (config.hooks.length) {
+                summary += `\n\n    ${colors.grey('Hooks')}:`;
+                for (const { type, command, path } of config.hooks) {
+                    summary += `\n        - "${command}" to run at "${type}" in "${path}"`;
+                }
+            }
+        }
+        if (config.variables.variables.length) {
+            summary += `\n\n    ${colors.grey('Variables')}:`;
+            for (const variable of config.variables.variables) {
+                summary += `\n        - ${variable}`;
+            }
         }
         console.log(summary);
 

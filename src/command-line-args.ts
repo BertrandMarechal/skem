@@ -3,7 +3,6 @@ import {SkemCommands} from './command-line';
 
 export interface SkemOptions {
     command: SkemCommands;
-    'install-packages': boolean;
     help: boolean;
     repo: boolean;
     all: boolean;
@@ -22,11 +21,6 @@ export class CommandLineArgs {
                 multiple: false,
                 defaultOption: true,
                 defaultValue: 'help'
-            },
-            {
-                name: 'install-packages',
-                type: Boolean,
-                defaultValue: false
             },
             {
                 name: 'ignore',
