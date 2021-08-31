@@ -62,6 +62,8 @@ Use the `--name` (or `-n`) option to provide the name of the blueprint you want 
 If no name is provided, skem will list the available blueprints you can then select from.
 If part of a name is provided, skem will filter the available blueprints that contain the value passed as parameter.
 
+Use the `--force` (or `-f`) option to remove the confirmation prompt on overwriting existing files.
+
 Use the `--variable` (or `-v`) option to give the value of a variable used in the blueprint.
 
 The values have to be provided as follows : `--variable name=test` and `--variable text='Lorem ipsum...'`
@@ -87,6 +89,8 @@ To remove one or all the blueprints from the local library, just run `skem remov
 
 Use the `--name` (or `-n`) option to provide the name of the blueprint you want to remove.
 Clears the library if no value is provided.
+
+Use the `--force` (or `-f`) option to remove the confirmation prompt on clearing the blueprint library.
 
 ### List
 
