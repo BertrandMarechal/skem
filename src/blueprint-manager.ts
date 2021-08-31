@@ -125,17 +125,24 @@ export class BlueprintManager {
         this._updateConfigInFile();
     }
 
-    async removeFromConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
+    async removeFromConfig({ name, force }: Pick<SkemOptions, 'name' | 'force'>): Promise<void> {
         if (name) {
             delete this._config[name];
             this._updateConfigInFile();
-            console.log(`Configuration cleared for ${name}`);
+            console.log(`Library cleared for ${name}`);
         } else {
-            const all = await UserInterface.removeAllConfigurations();
-            if (all) {
+            if (this.configNames.length === 0) {
+                console.log('Library is already cleared');
+                return;
+            }
+            let all = false;
+            if (!force) {
+                all = await UserInterface.removeAllConfigurations();
+            }
+            if (force || all) {
                 this._config = {};
                 this._updateConfigInFile();
-                console.log('Configuration cleared');
+                console.log('Library cleared');
             }
         }
     }

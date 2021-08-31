@@ -6,6 +6,7 @@ export interface SkemOptions {
     help: boolean;
     repo: boolean;
     all: boolean;
+    force: boolean;
     name: string;
     ignore: string;
     path: string;
@@ -43,6 +44,12 @@ export class CommandLineArgs {
             {
                 name: 'all',
                 alias: 'a',
+                type: Boolean,
+                defaultValue: false
+            },
+            {
+                name: 'force',
+                alias: 'f',
                 type: Boolean,
                 defaultValue: false
             },

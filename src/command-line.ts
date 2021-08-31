@@ -130,6 +130,11 @@ const help: Record<string, Section[]> = {
                     alias: 'n',
                     description: 'Name of the blueprint. Offers to remove all if none passed'
                 },
+                {
+                    name: 'force',
+                    alias: 'f',
+                    description: 'Forces the deletion of the blueprint'
+                },
             ]
         }
     ],

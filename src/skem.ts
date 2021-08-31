@@ -223,8 +223,8 @@ export class Skem {
         }
     }
 
-    async removeFromConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
-        await this.configManager.removeFromConfig({ name });
+    async removeFromConfig({ name, force }: Pick<SkemOptions, 'name' | 'force'>): Promise<void> {
+        await this.configManager.removeFromConfig({ name, force });
     }
 
     async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
