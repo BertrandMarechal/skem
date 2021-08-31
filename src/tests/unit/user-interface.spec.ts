@@ -18,11 +18,11 @@ describe('user-interface', function () {
                         first = false;
                         return {
                             choice: ''
-                        } as any;
+                        } as never;
                     }
                     return {
                         choice: 'config1'
-                    } as any;
+                    } as never;
                 });
 
             const response = await UserInterface.selectBlueprint(['config1', 'config2']);
@@ -44,7 +44,7 @@ describe('user-interface', function () {
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
                 .mockImplementation(async () => ({
                     all: true
-                } as any));
+                } as never));
 
             const response = await UserInterface.removeAllConfigurations();
 
@@ -68,11 +68,11 @@ describe('user-interface', function () {
                         first = false;
                         return {
                             desiredName: ''
-                        } as any;
+                        } as never;
                     }
                     return {
                         desiredName: 'config1'
-                    } as any;
+                    } as never;
                 });
 
             const response = await UserInterface.chooseValidNameForBlueprint();
@@ -97,11 +97,11 @@ describe('user-interface', function () {
                         first = false;
                         return {
                             response: ''
-                        } as any;
+                        } as never;
                     }
                     return {
                         response: 'value'
-                    } as any;
+                    } as never;
                 });
 
             const response = await UserInterface.chooseValidVariable('var');
@@ -120,7 +120,7 @@ describe('user-interface', function () {
     describe('overwriteFolderNameForBlueprint', () => {
         it('should return the new name if one selected', async () => {
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
-                .mockImplementation(async () => ({ desiredName: 'desiredName' } as any));
+                .mockImplementation(async () => ({ desiredName: 'desiredName' } as never));
 
             const response = await UserInterface.overwriteFolderNameForBlueprint('originalName');
 
@@ -136,7 +136,7 @@ describe('user-interface', function () {
         });
         it('should return the old name if none are enterred', async () => {
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
-                .mockImplementation(async () => ({ desiredName: '' } as any));
+                .mockImplementation(async () => ({ desiredName: '' } as never));
 
             const response = await UserInterface.overwriteFolderNameForBlueprint('originalName');
 
@@ -154,7 +154,7 @@ describe('user-interface', function () {
     describe('confirmOverwriteOfBlueprintOrExit', () => {
         it('should carry on if we confirm', async () => {
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
-                .mockImplementation(async () => ({ confirm: true } as any));
+                .mockImplementation(async () => ({ confirm: true } as never));
             const exitSpy = jest.spyOn(process, 'exit');
 
             await UserInterface.confirmOverwriteOfBlueprintOrExit('originalName');
@@ -171,7 +171,7 @@ describe('user-interface', function () {
         });
         it('should stop if we do not confirm', async () => {
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
-                .mockImplementation(async () => ({ confirm: false } as any));
+                .mockImplementation(async () => ({ confirm: false } as never));
             const exitSpy = jest.spyOn(process, 'exit')
                 .mockImplementationOnce(jest.fn());
 
@@ -191,7 +191,7 @@ describe('user-interface', function () {
     describe('confirmOverwriteOfFile', () => {
         it('should return what is told by the user', async () => {
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
-                .mockImplementation(async () => ({ confirm: true } as any));
+                .mockImplementation(async () => ({ confirm: true } as never));
 
             const response = await UserInterface.confirmOverwriteOfFile('fileName');
 
