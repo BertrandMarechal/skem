@@ -1,7 +1,7 @@
 import commandLineUsage, { Section } from 'command-line-usage';
 import { SkemOptions } from './command-line-args';
 
-export type Commands =
+export type SkemCommands =
     | 'help' | 'h'
     | 'install' | 'i'
     | 'add' | 'a'
@@ -18,7 +18,7 @@ const help: Record<string, Section[]> = {
             content: 'Your blueprint manager to ease boilerplate work.\nPlease try "skem <command> --help" to get help on the command.'
         },
         {
-            header: 'Commands',
+            header: 'SkemCommands',
             content: [
                 {
                     name: 'help',

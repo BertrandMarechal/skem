@@ -17,13 +17,15 @@ export class Skem {
         this.variableManager = new VariableManager();
     }
 
-    async install({ path, name, variables: optionsVariables }: SkemOptions): Promise<void> {
+    async install({ path, name, variable: optionsVariables }: SkemOptions): Promise<void> {
         const config = await this.configManager.chooseConfiguration({ name });
         const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
         console.log(`Installing ${colors.cyan(name)}`);
         if (config.variables.variables.length) {
             for (const variable of config.variables.variables) {
-                variables[variable] = await UserInterface.chooseValidVariable(variable);
+                if (!variables[variable]) {
+                    variables[variable] = await UserInterface.chooseValidVariable(variable);
+                }
             }
         }
         const skemConfig = config;
@@ -33,9 +35,8 @@ export class Skem {
                 fileName,
                 config.variables.variables,
                 variables,
-                SkemConfigManager.getFileNameVariableWrapper(this.configManager.config)
+                SkemConfigManager.getFileNameVariableWrapper(skemConfig)
             ));
-            console.log(newFileName);
             console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
             FileManager.writeFileSync(
                 newFileName,
@@ -43,7 +44,7 @@ export class Skem {
                     skemConfig.root,
                     config.variables.variables,
                     variables,
-                    SkemConfigManager.getVariableWrapper(skemConfig.root, this.configManager.config)
+                    SkemConfigManager.getVariableWrapper(skemConfig.root, skemConfig)
                 )
             );
         } else {
@@ -57,7 +58,7 @@ export class Skem {
                     fileName,
                     skemConfig.variables.fileVariables[`${i}`] || [],
                     variables,
-                    SkemConfigManager.getFileNameVariableWrapper(this.configManager.config)
+                    SkemConfigManager.getFileNameVariableWrapper(skemConfig)
                 );
                 console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
                 FileManager.writeFileSync(
@@ -66,7 +67,7 @@ export class Skem {
                         skemConfig.root + fileName,
                         skemConfig.variables.fileVariables[`${i}`] || [],
                         variables,
-                        SkemConfigManager.getVariableWrapper(skemConfig.root + fileName, this.configManager.config)
+                        SkemConfigManager.getVariableWrapper(skemConfig.root + fileName, skemConfig)
                     )
                 );
             }
@@ -81,7 +82,13 @@ export class Skem {
     }
 
     async extractConfigFromProject(
-        { path, name, isUpdate, folderNameFromLoop }: Pick<SkemOptions, 'path' | 'name'> & { isUpdate?: boolean, folderNameFromLoop?: string }
+        {
+            path,
+            name,
+            isUpdate,
+            folderNameFromLoop
+        }: Pick<SkemOptions, 'path' | 'name'> & { isUpdate?: boolean, folderNameFromLoop?: string },
+        skemConfigManager?: SkemConfigManager
     ): Promise<void> {
         let configName: string = name || '';
         let skemConfig: SkemConfigManager | undefined;
@@ -92,7 +99,7 @@ export class Skem {
             if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
                 skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
                 skemWrappers = skemConfig.skemWrappers;
-                if(skemConfig.isSingleFiles) {
+                if (skemConfig.isSingleFiles) {
                     const singleBlueprints = skemConfig.singleFiles;
                     for (const singleBlueprint of singleBlueprints) {
                         await this.extractConfigFromProject({
@@ -102,10 +109,24 @@ export class Skem {
                         });
                     }
                     return;
+                } else if (skemConfig.isSingleFile) {
+                    const singleBlueprints = skemConfig.singleFiles;
+                    for (const singleBlueprint of singleBlueprints) {
+                        await this.extractConfigFromProject({
+                            path: Path.resolve(path, singleBlueprint.file),
+                            name: singleBlueprint.name || configName,
+                            isUpdate,
+                        }, skemConfig);
+                    }
+                    return;
                 }
                 if (!configName && !!skemConfig.name) {
                     configName = skemConfig.name;
                 }
+            }
+        } else {
+            if (skemConfigManager) {
+                skemWrappers = skemConfigManager.skemWrappers;
             }
         }
         if (!configName && folderNameFromLoop) {

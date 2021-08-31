@@ -1,8 +1,8 @@
 import commandLineArgs from 'command-line-args';
-import {Commands} from './command-line';
+import {SkemCommands} from './command-line';
 
 export interface SkemOptions {
-    command: Commands;
+    command: SkemCommands;
     'install-packages': boolean;
     help: boolean;
     repo: boolean;
@@ -10,7 +10,7 @@ export interface SkemOptions {
     name: string;
     ignore: string;
     path: string;
-    variables: string[];
+    variable: string[];
 }
 
 export class CommandLineArgs {

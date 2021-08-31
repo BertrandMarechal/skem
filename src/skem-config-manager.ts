@@ -52,8 +52,12 @@ export class SkemConfigManager {
         return this._config?.name || '';
     }
 
+    public get isSingleFile(): boolean {
+        return !!this._config?.singleFile;
+    }
+
     public get isSingleFiles(): boolean {
-        return !!this._config?.singleFile || !!this._config?.singleFiles?.length;
+        return !!this._config?.singleFiles?.length;
     }
 
     public get singleFiles(): { file: string, name?: string }[] {
@@ -108,11 +112,11 @@ export class SkemConfigManager {
             process.exit(1);
         }
         if (this._config?.fileNameVariableWrapper && !SkemConfigManager._validateWrapper(this._config?.fileNameVariableWrapper)) {
-            console.error(`Invalid config in "${this._fileName}": fileNameVariableWrapper should be symmetrical. i.e. <<<>>>.`);
+            console.error(`Invalid config in "${this._fileName}": fileNameVariableWrapper should be of even length. i.e. <<<>>>.`);
             process.exit(1);
         }
         if (this._config?.variableWrapper && !SkemConfigManager._validateWrapper(this._config?.variableWrapper)) {
-            console.error(`Invalid config in "${this._fileName}": variableWrapper should be symmetrical. i.e. <<<>>>.`);
+            console.error(`Invalid config in "${this._fileName}": variableWrapper should be of even length. i.e. <<<>>>.`);
             process.exit(1);
         }
         if (this._config?.variableWrappers) {
@@ -125,7 +129,7 @@ export class SkemConfigManager {
                     extensions.push(variableWrapper.extension);
                 }
                 if (!SkemConfigManager._validateWrapper(variableWrapper.wrapper)) {
-                    console.error(`Invalid config in "${this._fileName}": variableWrappers has one wrapper that is not symmetrical. i.e. <<<>>>.`);
+                    console.error(`Invalid config in "${this._fileName}": variableWrappers has one wrapper that is not of even length. i.e. <<<>>>.`);
                     process.exit(1);
                 }
             }

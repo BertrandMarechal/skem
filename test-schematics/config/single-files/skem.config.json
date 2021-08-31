@@ -1,0 +1,5 @@
+{
+  "singleFile": "test_---name---_file.ts",
+  "variableWrapper": "$abc$abc",
+  "fileNameVariableWrapper": "------"
+}

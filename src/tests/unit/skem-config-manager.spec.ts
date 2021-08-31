@@ -68,16 +68,42 @@ describe('skem-config-manager', function () {
             expect(skemConfigManager.name).toEqual('');
         });
     });
-    describe('isSingleFiles', () => {
+    describe('isSingleFile', () => {
         it('returns true if singleFile is provided in the config', () => {
             jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => JSON.stringify({ singleFile: 'blueprint' }));
 
             const skemConfigManager = new SkemConfigManager('fileName');
 
-            expect(skemConfigManager.isSingleFiles).toEqual(true);
+            expect(skemConfigManager.isSingleFile).toEqual(true);
         });
         it('returns false if singleFile is not provided in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({}));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.isSingleFile).toEqual(false);
+        });
+    });
+    describe('isSingleFiles', () => {
+        it('returns true if singleFiles is provided in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({ singleFiles: ['blueprint'] }));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.isSingleFiles).toEqual(true);
+        });
+        it('returns false if singleFiles is provided empty in the config', () => {
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({ singleFiles: [] }));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+
+            expect(skemConfigManager.isSingleFiles).toEqual(false);
+        });
+        it('returns false if singleFiles is not provided in the config', () => {
             jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => JSON.stringify({}));
 

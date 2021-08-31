@@ -56,10 +56,10 @@ export class VariableManager {
         const variablesInFiles: { file: string, name: string }[] = [];
         const variables: string[] = [];
         const fileVariables: Record<number, string[]> = {};
-        const [fileNameStartWrapper, fileNameEndWrapper] = SkemConfigManager.getFileNameVariableWrapper(skemWrappers);
+        const [fileNameStartWrapper, fileNameEndWrapper] = this.translateWrappersToRegExpString(SkemConfigManager.getFileNameVariableWrapper(skemWrappers));
         for (let i = 0; i < fileList.length; i++) {
             const fileName = fileList[i];
-            const [fileContentStartWrapper, fileContentEndWrapper] = SkemConfigManager.getVariableWrapper(fileName, skemWrappers);
+            const [fileContentStartWrapper, fileContentEndWrapper] = this.translateWrappersToRegExpString(SkemConfigManager.getVariableWrapper(fileName, skemWrappers));
             const data = fs.readFileSync(fileName, 'ascii');
             let matchedVariables = (data.match(new RegExp(`${fileContentStartWrapper}([a-z0-9-]+)${fileContentEndWrapper}`, 'ig')) || [])
                 .concat(fileName.match(new RegExp(`${fileNameStartWrapper}([a-z0-9-]+)${fileNameEndWrapper}`, 'ig')) || []);
@@ -94,8 +94,8 @@ export class VariableManager {
 
     private static translateWrappersToRegExpString([start, end]: [string, string]): [string, string] {
         return [
-            start.split('').map(s => `\\${s}`).join(''),
-            end.split('').map(s => `\\${s}`).join(''),
+            start.split('').map(s => /[a-z0-9]/i.test(s) ? s : `\\${s}`).join(''),
+            end.split('').map(s => /[a-z0-9]/i.test(s) ? s : `\\${s}`).join(''),
         ];
     }
 }

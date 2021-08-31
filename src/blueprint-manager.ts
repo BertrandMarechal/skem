@@ -68,7 +68,9 @@ export class BlueprintManager {
             console.log(`Selected ${configName} as the only config available${name ? ' with the filter' : ''}.`);
             console.log();
         }
-        configName = await UserInterface.selectBlueprint(configNames);
+        if (!configName) {
+            configName = await UserInterface.selectBlueprint(configNames);
+        }
         return this.config[configName];
     }
 
@@ -83,6 +85,18 @@ export class BlueprintManager {
             }
         } else {
             summary += `\n\n    ${colors.grey('Single File')}`;
+        }
+        if (config.fileNameVariableWrapper) {
+            summary += `\n\n    ${colors.grey('File name variable wrapper')}: ${config.fileNameVariableWrapper}`;
+        }
+        if (config.variableWrapper) {
+            summary += `\n\n    ${colors.grey('Variable wrapper')}: ${config.variableWrapper}`;
+        }
+        if (config.variableWrappers) {
+            summary += `\n\n    ${colors.grey('Variable wrappers')}:`;
+            for (const { wrapper, extension } of config.variableWrappers) {
+                summary += `\n        - ${wrapper} for "${extension}"`;
+            }
         }
         summary += `\n\n    ${colors.grey('Variables')}:`;
         for (const variable of config.variables.variables) {

@@ -1,8 +1,10 @@
 /node_modules/
 /schematics/**/*.js
+/test-schematics/**/*.js
 /tests/**/*.js
 /src/**/*.js
 /dist/
 /.idea/
 /db/
 /coverage/
+temp/
