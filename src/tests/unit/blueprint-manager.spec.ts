@@ -93,6 +93,7 @@ describe('blueprint-manager', function () {
                         fileVariables: {},
                         variablesInFiles: []
                     },
+                    hooks: [],
                 }
             );
 
@@ -108,6 +109,7 @@ describe('blueprint-manager', function () {
                         fileVariables: {},
                         variablesInFiles: []
                     },
+                    hooks: [],
                 }
             }));
         });
@@ -119,7 +121,7 @@ describe('blueprint-manager', function () {
             const writeFileSyncSpy = jest.spyOn(mockFileManager, 'writeFileSync');
 
             const configManager = new BlueprintManager();
-            await configManager.removeFromConfig({ name: 'config' });
+            await configManager.removeFromConfig({ name: 'config', force: false });
 
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
             expect(writeFileSyncSpy).toHaveBeenCalledWith(localDBFile, '{}');
@@ -132,7 +134,7 @@ describe('blueprint-manager', function () {
                 .mockImplementationOnce(async () => ({ all: true }));
 
             const configManager = new BlueprintManager();
-            await configManager.removeFromConfig({ name: '' });
+            await configManager.removeFromConfig({ name: '', force: false });
 
             expect(promptSpy).toHaveBeenCalledTimes(1);
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');
@@ -146,7 +148,7 @@ describe('blueprint-manager', function () {
                 .mockImplementationOnce(async () => ({ all: false }));
 
             const configManager = new BlueprintManager();
-            await configManager.removeFromConfig({ name: '' });
+            await configManager.removeFromConfig({ name: '', force: false });
 
             expect(promptSpy).toHaveBeenCalled();
             expect(readFileSyncSpy).toHaveBeenCalledWith(localDBFile, 'ascii');

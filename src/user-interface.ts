@@ -20,7 +20,7 @@ export class UserInterface {
         const { all } = await inquirer.prompt({
             type: 'confirm',
             name: 'all',
-            message: 'Do you want to remove all configurations ?'
+            message: 'Do you want to remove all blueprints ?'
         });
         return all;
     }
@@ -32,19 +32,6 @@ export class UserInterface {
                 name: 'desiredName',
                 type: 'input',
                 message: 'Please choose a name for this blueprint:'
-            });
-            configName = desiredName;
-        }
-        return configName;
-    }
-
-    static async chooseValidNameForBlueprintImplementation(): Promise<string> {
-        let configName = '';
-        while (!configName) {
-            const { desiredName } = await inquirer.prompt({
-                name: 'desiredName',
-                type: 'input',
-                message: 'Please choose a name to apply blueprint:'
             });
             configName = desiredName;
         }

@@ -152,7 +152,6 @@ export class BlueprintManager {
             console.error(`Unknown configuration: ${name}`);
             process.exit(1);
         }
-
     }
 
     private _updateConfigInFile() {

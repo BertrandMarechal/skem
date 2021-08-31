@@ -23,7 +23,7 @@ export class SkemHook {
     command: string;
     path: string;
 
-    constructor(params: SkemHook) {
+    constructor(params: Pick<SkemHook, 'type' | 'command' | 'path'>) {
         this.type = params.type;
         this.command = params.command;
         this.path = params.path || '.';
@@ -63,7 +63,7 @@ export class SkemConfigManager {
             try {
                 this._config = JSON.parse(fileContent);
                 if (this._config) {
-                    this._config.hooks = this._config?.hooks.map(h => new SkemHook(h)) || [];
+                    this._config.hooks = (this._config?.hooks || []).map(h => new SkemHook(h)) || [];
                 }
             } catch {
                 console.error(`Invalid JSON in "${this._fileName}".`);
@@ -148,25 +148,21 @@ export class SkemConfigManager {
     }
 
     private _validateConfig() {
+        console.log(this._config);
         if (this._config?.singleFile && this._config?.singleFiles?.length) {
             console.error(`Invalid config in "${this._fileName}": Please provide either singleFile or singleFiles, but not both.`);
             process.exit(1);
+            return;
         }
         if (this._config?.fileNameVariableWrapper && !SkemConfigManager._validateWrapper(this._config?.fileNameVariableWrapper)) {
             console.error(`Invalid config in "${this._fileName}": fileNameVariableWrapper should be of even length. i.e. <<<>>>.`);
             process.exit(1);
+            return;
         }
         if (this._config?.variableWrapper && !SkemConfigManager._validateWrapper(this._config?.variableWrapper)) {
             console.error(`Invalid config in "${this._fileName}": variableWrapper should be of even length. i.e. <<<>>>.`);
             process.exit(1);
-        }
-        if (this._config?.hooks.length) {
-            for (const hook of this._config.hooks) {
-                if (!hook.isValid()) {
-                    console.error(`Invalid config in "${this._fileName}": one of the hooks is invalid.`);
-                    process.exit(1);
-                }
-            }
+            return;
         }
 
         if (this._config?.variableWrappers) {
@@ -175,12 +171,23 @@ export class SkemConfigManager {
                 if (extensions.some(e => e === variableWrapper.extension)) {
                     console.error(`Invalid config in "${this._fileName}": variableWrappers has 2 wrapper set up for the same extension.`);
                     process.exit(1);
+                    return;
                 } else {
                     extensions.push(variableWrapper.extension);
                 }
                 if (!SkemConfigManager._validateWrapper(variableWrapper.wrapper)) {
                     console.error(`Invalid config in "${this._fileName}": variableWrappers has one wrapper that is not of even length. i.e. <<<>>>.`);
                     process.exit(1);
+                    return;
+                }
+            }
+        }
+        if (this._config?.hooks.length) {
+            for (const hook of this._config.hooks) {
+                if (!hook.isValid()) {
+                    console.error(`Invalid config in "${this._fileName}": one of the hooks is invalid.`);
+                    process.exit(1);
+                    return;
                 }
             }
         }
