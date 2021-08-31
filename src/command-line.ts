@@ -114,6 +114,11 @@ const help: Record<string, Section[]> = {
                     alias: 'v',
                     description: 'Provide a value for a variable (i.e.: -v name="this is a test".',
                 },
+                {
+                    name: 'force',
+                    alias: 'f',
+                    description: 'Forces the overwrite of existing files'
+                },
             ]
         }
     ],

@@ -188,4 +188,22 @@ describe('user-interface', function () {
             inquirerPromptSpy.mockReset();
         });
     });
+    describe('confirmOverwriteOfFile', () => {
+        it('should return what is told by the user', async () => {
+            const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
+                .mockImplementation(async () => ({ confirm: true } as any));
+
+            const response = await UserInterface.confirmOverwriteOfFile('fileName');
+
+            expect(response).toEqual(true);
+            expect(inquirerPromptSpy).toHaveBeenCalledTimes(1);
+            expect(inquirerPromptSpy).toHaveBeenCalledWith({
+                type: 'confirm',
+                name: 'confirm',
+                message: `There is an existing file this name "${colors.yellow('fileName')}". Do you want to overwrite it ?`
+            });
+
+            inquirerPromptSpy.mockReset();
+        });
+    });
 });

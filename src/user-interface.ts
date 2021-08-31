@@ -73,4 +73,13 @@ export class UserInterface {
             process.exit(0);
         }
     }
+
+    static async confirmOverwriteOfFile(fileName: string): Promise<boolean> {
+        const { confirm } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'confirm',
+            message: `There is an existing file this name "${colors.yellow(fileName)}". Do you want to overwrite it ?`
+        });
+        return confirm;
+    }
 }
