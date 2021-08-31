@@ -49,10 +49,7 @@ export class Skem {
                 )
             );
         } else {
-            if (!variables.name) {
-                variables.name = await UserInterface.chooseValidNameForBlueprintImplementation();
-            }
-            const newRoot = Path.resolve(path, variables.name);
+            const newRoot = Path.resolve(path);
             for (let i = 0; i < skemConfig.files.length; i++) {
                 const fileName = skemConfig.files[i];
                 const newFileName = newRoot + VariableManager.replaceVariableInFileName(
