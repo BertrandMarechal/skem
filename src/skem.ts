@@ -214,6 +214,9 @@ export class Skem {
             });
         } else {
             const configNames = this.configManager.configNames;
+            if (!configNames.length) {
+                console.error('Could not find any blueprints. Try to add one with "skem add".');
+            }
             for (const schematic of configNames) {
                 await this.extractConfigFromProject({
                     ...options,
