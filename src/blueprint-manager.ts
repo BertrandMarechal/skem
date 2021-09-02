@@ -46,10 +46,11 @@ export class BlueprintManager {
         return Object.keys(this._config);
     }
 
-    async chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemBlueprint> {
+    async chooseConfiguration({ name }: Pick<SkemOptions, 'name'>): Promise<SkemBlueprint | undefined> {
         if (this.configNames.length === 0) {
-            console.error('Could not find any config. Try to add one with "skem add".');
+            console.error('Could not find any blueprints. Try to add one with "skem add".');
             process.exit(1);
+            return;
         }
         let configNames = this.configNames;
         if (name) {
@@ -60,6 +61,7 @@ export class BlueprintManager {
             if (configNames.length === 0) {
                 console.error(`Unknown configuration: ${name}`);
                 process.exit(1);
+                return;
             }
         }
         let configName = '';
@@ -76,48 +78,45 @@ export class BlueprintManager {
 
     async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
         const config = await this.chooseConfiguration({ name });
-        let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
-        summary += `\n    ${colors.grey('Root')}: ${config.root}`;
-        if (!config.isFile) {
-            if (config.files.length) {
-                summary += `\n\n    ${colors.grey('Files')}:`;
-                for (const files of config.files) {
-                    summary += `\n        - ${files}`;
+        if (config) {
+            let summary = `    ${colors.grey('Name')}: ${colors.cyan(config.name)}`;
+            summary += `\n    ${colors.grey('Root')}: ${config.root}`;
+            if (!config.isFile) {
+                if (config.files.length) {
+                    summary += `\n\n    ${colors.grey('Files')}:`;
+                    for (const files of config.files) {
+                        summary += `\n        - ${files}`;
+                    }
                 }
+            } else {
+                summary += `\n\n    ${colors.grey('Single File')}`;
             }
-        } else {
-            summary += `\n\n    ${colors.grey('Single File')}`;
-        }
-        if (config.fileNameVariableWrapper) {
-            summary += `\n\n    ${colors.grey('File name variable wrapper')}: ${config.fileNameVariableWrapper}`;
-        }
-        if (config.variableWrapper) {
-            summary += `\n\n    ${colors.grey('Variable wrapper')}: ${config.variableWrapper}`;
-        }
-        if (config.variableWrappers) {
-            if (config.variableWrappers.length) {
+            if (config.fileNameVariableWrapper) {
+                summary += `\n\n    ${colors.grey('File name variable wrapper')}: ${config.fileNameVariableWrapper}`;
+            }
+            if (config.variableWrapper) {
+                summary += `\n\n    ${colors.grey('Variable wrapper')}: ${config.variableWrapper}`;
+            }
+            if (config.variableWrappers?.length) {
                 summary += `\n\n    ${colors.grey('Variable wrappers')}:`;
                 for (const { wrapper, extension } of config.variableWrappers) {
                     summary += `\n        - ${wrapper} for "${extension}"`;
                 }
             }
-        }
-        if (config.hooks) {
-            if (config.hooks.length) {
+            if (config.hooks?.length) {
                 summary += `\n\n    ${colors.grey('Hooks')}:`;
                 for (const { type, command, path } of config.hooks) {
                     summary += `\n        - "${command}" to run at "${type}" in "${path}"`;
                 }
             }
-        }
-        if (config.variables.variables.length) {
-            summary += `\n\n    ${colors.grey('Variables')}:`;
-            for (const variable of config.variables.variables) {
-                summary += `\n        - ${variable}`;
+            if (config.variables.variables.length) {
+                summary += `\n\n    ${colors.grey('Variables')}:`;
+                for (const variable of config.variables.variables) {
+                    summary += `\n        - ${variable}`;
+                }
             }
+            console.log(summary);
         }
-        console.log(summary);
-
     }
 
     addToConfig(configName: string, config: SkemBlueprint): void {

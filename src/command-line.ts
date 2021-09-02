@@ -5,13 +5,12 @@ export type SkemCommands =
     | 'help' | 'h'
     | 'install' | 'i'
     | 'add' | 'a'
-    | 'generate' | 'g'
     | 'list' | 'ls'
     | 'remove' | 'rm'
     | 'update' | 'u'
     | 'print' | 'p';
 
-const help: Record<string, Section[]> = {
+export const help: Record<string, Section[]> = {
     global: [
         {
             header: 'Skem',
@@ -92,7 +91,7 @@ const help: Record<string, Section[]> = {
     ],
     install: [
         {
-            header: 'install (i) / generate (g)',
+            header: 'install (i)',
             content: 'Applies the blueprint to the selected location.'
         },
         {
@@ -184,7 +183,7 @@ const help: Record<string, Section[]> = {
 };
 
 export class CommandLineUsage {
-    static showHelp({ command }: SkemOptions): void {
+    static showHelp({ command }: Pick<SkemOptions, 'command'>): void {
         switch (command) {
         case 'help':
         case 'h':
@@ -212,8 +211,6 @@ export class CommandLineUsage {
             break;
         case 'install':
         case 'i':
-        case 'generate':
-        case 'g':
             console.log(commandLineUsage(help.install));
             break;
         }

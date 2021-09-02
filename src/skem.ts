@@ -18,72 +18,74 @@ export class Skem {
 
     async install({ path, name, variable: optionsVariables, force }: SkemOptions): Promise<void> {
         const config = await this.configManager.chooseConfiguration({ name });
-        const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
-        console.log(`Installing ${colors.cyan(name)}`);
-        if (config.variables.variables.length) {
-            for (const variable of config.variables.variables) {
-                if (!variables[variable]) {
-                    variables[variable] = await UserInterface.chooseValidVariable(variable);
+        if (config) {
+            const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
+            console.log(`Installing ${colors.cyan(name)}`);
+            if (config.variables.variables.length) {
+                for (const variable of config.variables.variables) {
+                    if (!variables[variable]) {
+                        variables[variable] = await UserInterface.chooseValidVariable(variable);
+                    }
                 }
             }
-        }
-        const skemConfig = config;
-        SkemConfigManager.runHooks(skemConfig.hooks, 'pre-install', path);
+            const skemConfig = config;
+            SkemConfigManager.runHooks(skemConfig.hooks, 'pre-install', path);
 
-        if (skemConfig.isFile) {
-            const fileName = Path.basename(skemConfig.root);
-            const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
-                fileName,
-                config.variables.variables,
-                variables,
-                SkemConfigManager.getFileNameVariableWrapper(skemConfig)
-            ));
-            let writeFile = true;
-            if (FileManager.exists(newFileName)) {
-                writeFile = force || await UserInterface.confirmOverwriteOfFile(newFileName);
-            }
-
-            if (writeFile) {
-                console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
-                FileManager.writeFileSync(
-                    newFileName,
-                    VariableManager.replaceVariablesInFile(
-                        skemConfig.root,
-                        config.variables.variables,
-                        variables,
-                        SkemConfigManager.getVariableWrapper(skemConfig.root, skemConfig)
-                    )
-                );
-            }
-        } else {
-            const newRoot = Path.resolve(path);
-            for (let i = 0; i < skemConfig.files.length; i++) {
-                const fileName = skemConfig.files[i];
-                const newFileName = newRoot + VariableManager.replaceVariableInFileName(
+            if (skemConfig.isFile) {
+                const fileName = Path.basename(skemConfig.root);
+                const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
                     fileName,
-                    skemConfig.variables.fileVariables[`${i}`] || [],
+                    config.variables.variables,
                     variables,
                     SkemConfigManager.getFileNameVariableWrapper(skemConfig)
-                );
+                ));
                 let writeFile = true;
                 if (FileManager.exists(newFileName)) {
                     writeFile = force || await UserInterface.confirmOverwriteOfFile(newFileName);
                 }
+
                 if (writeFile) {
                     console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
                     FileManager.writeFileSync(
                         newFileName,
                         VariableManager.replaceVariablesInFile(
-                            skemConfig.root + fileName,
-                            skemConfig.variables.fileVariables[`${i}`] || [],
+                            skemConfig.root,
+                            config.variables.variables,
                             variables,
-                            SkemConfigManager.getVariableWrapper(skemConfig.root + fileName, skemConfig)
+                            SkemConfigManager.getVariableWrapper(skemConfig.root, skemConfig)
                         )
                     );
                 }
+            } else {
+                const newRoot = Path.resolve(path);
+                for (let i = 0; i < skemConfig.files.length; i++) {
+                    const fileName = skemConfig.files[i];
+                    const newFileName = newRoot + VariableManager.replaceVariableInFileName(
+                        fileName,
+                        skemConfig.variables.fileVariables[`${i}`] || [],
+                        variables,
+                        SkemConfigManager.getFileNameVariableWrapper(skemConfig)
+                    );
+                    let writeFile = true;
+                    if (FileManager.exists(newFileName)) {
+                        writeFile = force || await UserInterface.confirmOverwriteOfFile(newFileName);
+                    }
+                    if (writeFile) {
+                        console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
+                        FileManager.writeFileSync(
+                            newFileName,
+                            VariableManager.replaceVariablesInFile(
+                                skemConfig.root + fileName,
+                                skemConfig.variables.fileVariables[`${i}`] || [],
+                                variables,
+                                SkemConfigManager.getVariableWrapper(skemConfig.root + fileName, skemConfig)
+                            )
+                        );
+                    }
+                }
             }
+            SkemConfigManager.runHooks(skemConfig.hooks, 'post-install', path);
         }
-        SkemConfigManager.runHooks(skemConfig.hooks, 'post-install', path);
     }
 
     async extractConfigFromProject(

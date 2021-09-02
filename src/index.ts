@@ -5,7 +5,7 @@ import { Skem } from './skem';
 
 const skem = new Skem();
 
-async function main() {
+export async function main(): Promise<void> {
     const options: SkemOptions = CommandLineArgs.options;
     if (options.help) {
         CommandLineUsage.showHelp(options);
@@ -18,8 +18,6 @@ async function main() {
             break;
         case 'install':
         case 'i':
-        case 'generate':
-        case 'g':
             await skem.install(options);
             break;
         case 'add':
