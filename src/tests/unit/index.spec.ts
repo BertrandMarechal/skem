@@ -25,6 +25,7 @@ const options: SkemOptions = {
     name: '',
     ignore: '',
     path: '',
+    pick: '',
     variable: [],
 };
 describe('index', () => {

@@ -10,6 +10,7 @@ export interface SkemOptions {
     name: string;
     ignore: string;
     path: string;
+    pick: string | null;
     variable: string[];
 }
 
@@ -63,6 +64,10 @@ export class CommandLineArgs {
                 alias: 'p',
                 type: String,
                 defaultValue: '.'
+            },
+            {
+                name: 'pick',
+                type: String,
             },
             {
                 name: 'variable',

@@ -82,4 +82,14 @@ export class UserInterface {
         });
         return confirm;
     }
+
+    static async selectFilesToInstall(files: string[]): Promise<string[]> {
+        const { filesToInstall } = await inquirer.prompt({
+            type: 'checkbox',
+            name: 'filesToInstall',
+            message: 'Please select the files you want to install',
+            choices: files
+        });
+        return filesToInstall;
+    }
 }

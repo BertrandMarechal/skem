@@ -16,7 +16,7 @@ export class Skem {
         this.variableManager = new VariableManager();
     }
 
-    async install({ path, name, variable: optionsVariables, force }: SkemOptions): Promise<void> {
+    async install({ path, name, variable: optionsVariables, force, pick }: SkemOptions): Promise<void> {
         const config = await this.configManager.chooseConfiguration({ name });
         if (config) {
             const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
@@ -58,8 +58,23 @@ export class Skem {
                 }
             } else {
                 const newRoot = Path.resolve(path);
-                for (let i = 0; i < skemConfig.files.length; i++) {
-                    const fileName = skemConfig.files[i];
+                let files = skemConfig.files;
+                console.log(pick);
+                if (pick === null || pick) {
+                    if (pick) {
+                        files = files.filter(f => f.indexOf(pick) > -1);
+                    }
+                    if (files.length === 0) {
+                        console.log('No files could be picked with this filter. Please try with another filter.');
+                        process.exit(1);
+                        return;
+                    }
+                    if (files.length !== 1) {
+                        files = await UserInterface.selectFilesToInstall(files);
+                    }
+                }
+                for (let i = 0; i < files.length; i++) {
+                    const fileName = files[i];
                     const newFileName = newRoot + VariableManager.replaceVariableInFileName(
                         fileName,
                         skemConfig.variables.fileVariables[`${i}`] || [],

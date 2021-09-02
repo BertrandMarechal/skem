@@ -206,4 +206,23 @@ describe('user-interface', function () {
             inquirerPromptSpy.mockReset();
         });
     });
+    describe('selectFilesToInstall', () => {
+        it('should return what is told by the user', async () => {
+            const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
+                .mockImplementation(async () => ({ filesToInstall: ['f1', 'f2'] } as never));
+
+            const response = await UserInterface.selectFilesToInstall(['f1', 'f2', 'f3']);
+
+            expect(response).toEqual(['f1', 'f2']);
+            expect(inquirerPromptSpy).toHaveBeenCalledTimes(1);
+            expect(inquirerPromptSpy).toHaveBeenCalledWith({
+                type: 'checkbox',
+                name: 'filesToInstall',
+                message: 'Please select the files you want to install',
+                choices: ['f1', 'f2', 'f3']
+            });
+
+            inquirerPromptSpy.mockReset();
+        });
+    });
 });

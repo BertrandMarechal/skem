@@ -109,6 +109,10 @@ export const help: Record<string, Section[]> = {
                     defaultValue: '.'
                 },
                 {
+                    name: 'pick',
+                    description: 'Filters the files to install.',
+                },
+                {
                     name: 'variable',
                     alias: 'v',
                     description: 'Provide a value for a variable (i.e.: -v name="this is a test".',

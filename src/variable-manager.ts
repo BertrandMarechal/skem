@@ -5,19 +5,21 @@ import { SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
 export class VariableManager {
     parseOptionsVariables(optionVariables: string[]): Record<string, string> {
         const variables: Record<string, string> = {};
-        for (const optionVariable of optionVariables) {
-            if (!optionVariable) {
-                console.log('Please use variables as follow -v name="the name"');
-                process.exit(1);
-                return {};
+        if (optionVariables) {
+            for (const optionVariable of optionVariables) {
+                if (!optionVariable) {
+                    console.log('Please use variables as follow -v name="the name"');
+                    process.exit(1);
+                    return {};
+                }
+                const [key, value] = optionVariable.split('=');
+                if (!key || !value) {
+                    console.log('Please use variables as follow -v name="the name"');
+                    process.exit(1);
+                    return {};
+                }
+                variables[key] = value;
             }
-            const [key, value] = optionVariable.split('=');
-            if (!key || !value) {
-                console.log('Please use variables as follow -v name="the name"');
-                process.exit(1);
-                return {};
-            }
-            variables[key] = value;
         }
         return variables;
     }

@@ -7,6 +7,7 @@ const skem = new Skem();
 
 export async function main(): Promise<void> {
     const options: SkemOptions = CommandLineArgs.options;
+    console.log(options);
     if (options.help) {
         CommandLineUsage.showHelp(options);
     } else {

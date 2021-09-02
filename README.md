@@ -64,6 +64,9 @@ If part of a name is provided, skem will filter the available blueprints that co
 
 Use the `--force` (or `-f`) option to remove the confirmation prompt on overwriting existing files.
 
+Use the `--pick` option to filter the files to install. Provide a value to filter the files. Passing no value will offer
+the possibility pick amongst all the files.
+
 Use the `--variable` (or `-v`) option to give the value of a variable used in the blueprint.
 
 The values have to be provided as follows : `--variable name=test` and `--variable text='Lorem ipsum...'`

@@ -66,6 +66,7 @@
   "exclude": [
     "schematics",
     "temp",
+    "coverage",
     "test-schematics",
     "src/tests"
   ]
