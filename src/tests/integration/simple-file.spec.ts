@@ -8,6 +8,7 @@ describe('simple-file', function () {
     describe('no config', () => {
         it('should add and install properly ', () => {
             const blueprintName = v4();
+            const installationFolderName = v4();
             const name = v4();
             runSkem(
                 'add',
@@ -22,12 +23,13 @@ describe('simple-file', function () {
                 path.resolve('./temp'),
                 [
                     ['-n', blueprintName],
+                    ['-p', installationFolderName],
                     ['-v', `name=${name}`],
                     ['-v', 'console=log'],
                 ]
             );
-            expect(FileManager.exists(path.resolve(`./temp/test_${name}_file.ts`))).toEqual(true);
-            const fileContent = fs.readFileSync(path.resolve(`./temp/test_${name}_file.ts`), 'ascii');
+            expect(FileManager.exists(path.resolve(`./temp/${installationFolderName}/test_${name}_file.ts`))).toEqual(true);
+            const fileContent = fs.readFileSync(path.resolve(`./temp/${installationFolderName}/test_${name}_file.ts`), 'ascii');
             expect(fileContent.indexOf('console.log(\'log\');')).toEqual(0);
 
             runSkem(
@@ -37,12 +39,13 @@ describe('simple-file', function () {
                     ['-n', blueprintName],
                 ]
             );
-            fs.unlinkSync(path.resolve(`./temp/test_${name}_file.ts`));
+            fs.rmdirSync(path.resolve(`./temp/${installationFolderName}`), { recursive: true });
         });
     });
     describe('with config', () => {
         it('should add and install properly ', () => {
             const blueprintName = v4();
+            const installationFolderName = v4();
             const name = v4();
             runSkem(
                 'add',
@@ -56,12 +59,13 @@ describe('simple-file', function () {
                 path.resolve('./temp'),
                 [
                     ['-n', blueprintName],
+                    ['-p', installationFolderName],
                     ['-v', `name=${name}`],
                     ['-v', 'console=log'],
                 ]
             );
-            expect(FileManager.exists(path.resolve(`./temp/test_${name}_file.ts`))).toEqual(true);
-            const fileContent = fs.readFileSync(path.resolve(`./temp/test_${name}_file.ts`), 'ascii');
+            expect(FileManager.exists(path.resolve(`./temp/${installationFolderName}/test_${name}_file.ts`))).toEqual(true);
+            const fileContent = fs.readFileSync(path.resolve(`./temp/${installationFolderName}/test_${name}_file.ts`), 'ascii');
             expect(fileContent.indexOf('console.log(\'log\');')).toEqual(0);
 
             runSkem(
@@ -71,7 +75,7 @@ describe('simple-file', function () {
                     ['-n', blueprintName],
                 ]
             );
-            fs.unlinkSync(path.resolve(`./temp/test_${name}_file.ts`));
+            fs.rmdirSync(path.resolve(`./temp/${installationFolderName}`), { recursive: true });
         });
     });
 });
