@@ -8,16 +8,16 @@ import { UserInterface } from './user-interface';
 import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers, SkemHook } from './skem-config-manager';
 
 export class Skem {
-    configManager: BlueprintManager;
+    blueprintManager: BlueprintManager;
     variableManager: VariableManager;
 
     constructor() {
-        this.configManager = new BlueprintManager();
+        this.blueprintManager = new BlueprintManager();
         this.variableManager = new VariableManager();
     }
 
     async install({ path, name, variable: optionsVariables, force, pick }: SkemOptions): Promise<void> {
-        const config = await this.configManager.chooseConfiguration({ name });
+        const config = await this.blueprintManager.chooseConfiguration({ name });
         if (config) {
             const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
             console.log(`Installing ${colors.cyan(name)}`);
@@ -117,6 +117,7 @@ export class Skem {
         const isDirectory = FileManager.isDirectory(path);
         let skemWrappers: SkemConfigWrappers = {};
         let skemHooks: SkemHook[] = [];
+        const addOrUpdate = isUpdate ? 'Updat' : 'Add';
 
         if (isDirectory) {
             if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
@@ -164,21 +165,17 @@ export class Skem {
             }
         }
         if (!isUpdate) {
-            const configs = this.configManager.config;
+            const configs = this.blueprintManager.config;
             if (configs[configName]) {
                 await UserInterface.confirmOverwriteOfBlueprintOrExit(configName);
             }
         }
-        if (isUpdate) {
-            console.log(`    Updating ${colors.cyan(configName)}`);
-        } else {
-            console.log(`    Adding ${colors.cyan(configName)}`);
-        }
+        console.log(`    ${addOrUpdate}ing ${colors.cyan(configName)}`);
         const root = Path.resolve(path);
         const files = FileManager.getFileList(root);
         const variables = VariableManager.getVariables(files, skemWrappers);
         if (configName) {
-            this.configManager.addToConfig(configName,
+            this.blueprintManager.addToConfig(configName,
                 {
                     isFile: !isDirectory,
                     name: configName,
@@ -195,18 +192,14 @@ export class Skem {
                     hooks: skemHooks
                 }
             );
-            if (isUpdate) {
-                console.log(`    Updated ${colors.cyan(configName)}`);
-            } else {
-                console.log(`    Added ${colors.cyan(configName)}`);
-            }
+            console.log(`    ${addOrUpdate}ed ${colors.cyan(configName)}`);
             console.log();
         }
     }
 
     async loopOnSubFoldersAndExtractConfigFromProject(options: SkemOptions): Promise<void> {
         const { path } = options;
-        console.log('Looping on folders to find configurations');
+        console.log('Looping on folders to find blueprints');
         const subFolders = FileManager.getNonIgnoredFolderList(path);
         for (const subFolder of subFolders) {
             console.log(`Processing ${subFolder}`);
@@ -221,21 +214,23 @@ export class Skem {
     async update(options: SkemOptions): Promise<void> {
         const { name } = options;
         if (name) {
-            this.configManager.exitIfConfigDoesNotExist(name);
-            await this.extractConfigFromProject({
-                ...options,
-                path: this.configManager.config[name].root,
-                isUpdate: true,
-            });
+            if (this.blueprintManager.exitIfConfigDoesNotExist(name)) {
+                await this.extractConfigFromProject({
+                    ...options,
+                    path: this.blueprintManager.config[name].root,
+                    isUpdate: true,
+                });
+                return;
+            }
         } else {
-            const configNames = this.configManager.configNames;
+            const configNames = this.blueprintManager.configNames;
             if (!configNames.length) {
                 console.error('Could not find any blueprints. Try to add one with "skem add".');
             }
             for (const schematic of configNames) {
                 await this.extractConfigFromProject({
                     ...options,
-                    path: this.configManager.config[schematic].root,
+                    path: this.blueprintManager.config[schematic].root,
                     name: schematic,
                     isUpdate: true,
                 });
@@ -244,12 +239,12 @@ export class Skem {
     }
 
     listConfigs(): void {
-        const configNames = this.configManager.configNames;
+        const configNames = this.blueprintManager.configNames;
         if (configNames.length === 0) {
-            console.log(colors.grey('There are no config available on this system. Try to add one with "skem add".'));
+            console.log(colors.grey('There are no blueprints available on this system. Try to add one with "skem add".'));
             return;
         }
-        console.log(colors.grey(`Here ${configNames.length !== 1 ? 'are' : 'is'} the available config${configNames.length !== 1 ? 's' : ''}:`));
+        console.log(colors.grey(`Here ${configNames.length !== 1 ? 'are' : 'is'} the available blueprint${configNames.length !== 1 ? 's' : ''}:`));
         console.log();
         for (const key of configNames) {
             console.log('-', key);
@@ -257,10 +252,10 @@ export class Skem {
     }
 
     async removeFromConfig({ name, force }: Pick<SkemOptions, 'name' | 'force'>): Promise<void> {
-        await this.configManager.removeFromConfig({ name, force });
+        await this.blueprintManager.removeFromConfig({ name, force });
     }
 
     async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
-        await this.configManager.printConfig({ name });
+        await this.blueprintManager.printConfig({ name });
     }
 }

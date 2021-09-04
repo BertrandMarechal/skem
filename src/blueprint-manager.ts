@@ -146,11 +146,13 @@ export class BlueprintManager {
         }
     }
 
-    exitIfConfigDoesNotExist(name: string): void {
+    exitIfConfigDoesNotExist(name: string): boolean {
         if (!this.config[name]) {
             console.error(`Unknown configuration: ${name}`);
             process.exit(1);
+            return false;
         }
+        return true;
     }
 
     private _updateConfigInFile() {

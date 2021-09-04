@@ -24,13 +24,13 @@ export class FileManager {
     static getNonIgnoredFolderList(path: string): string[] {
         const files = fs.readdirSync(path);
         return files.filter(f =>
-            this.isDirectory(f) && !ignoredPaths.some(p => p === f)
+            FileManager.isDirectory(f) && !ignoredPaths.some(p => p === f)
         );
     }
 
     static getFileList(path: string, parentGitIgnores: { gitignore: unknown, root: string }[] = []): string[] {
         const gitIgnores = [...parentGitIgnores];
-        if (!this.isDirectory(path)) {
+        if (!FileManager.isDirectory(path)) {
             return [path];
         }
         let files = fs.readdirSync(path);
@@ -88,13 +88,13 @@ export class FileManager {
         fs.writeFileSync(fileName, content);
     }
 
-    private static createFolderIfNotExistsSync(folderName: string) {
+    static createFolderIfNotExistsSync(folderName: string): void {
         if (folderName && !fs.existsSync(folderName)) {
             fs.mkdirSync(folderName);
         }
     }
 
-    private static createFolderStructureIfNeeded(path: string, depth = 0): void {
+    static createFolderStructureIfNeeded(path: string, depth = 0): void {
         const splitPath = path
             .replace(/\\/g, '/')
             .replace(/\/\//g, '/')
