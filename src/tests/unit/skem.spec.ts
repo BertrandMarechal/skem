@@ -382,9 +382,10 @@ describe('skem', function () {
                     getVariablesSpy.mockReset();
                 });
             });
-            //     describe('directory', function () {
-            //
-            //     });
+            describe('directory', function () {
+                it.todo('should call extractConfigFromProject on all the singleFiles');
+                it.todo('should call extractConfigFromProject on a singleFile');
+            });
         });
     });
     describe('loopOnSubFoldersAndExtractConfigFromProject', function () {

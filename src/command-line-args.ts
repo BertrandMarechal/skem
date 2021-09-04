@@ -10,7 +10,7 @@ export interface SkemOptions {
     name: string;
     ignore: string;
     path: string;
-    pick: string | null;
+    pick?: string | null;
     variable: string[];
 }
 

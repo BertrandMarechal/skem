@@ -6,101 +6,21 @@ import { VariableManager } from './variable-manager';
 import { FileManager } from './file-manager';
 import { UserInterface } from './user-interface';
 import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers, SkemHook } from './skem-config-manager';
+import { BlueprintInstaller } from './blueprint-installer';
 
 export class Skem {
     blueprintManager: BlueprintManager;
+    blueprintInstaller: BlueprintInstaller;
     variableManager: VariableManager;
 
     constructor() {
         this.blueprintManager = new BlueprintManager();
         this.variableManager = new VariableManager();
+        this.blueprintInstaller = new BlueprintInstaller();
     }
 
-    async install({ path, name, variable: optionsVariables, force, pick }: SkemOptions): Promise<void> {
-        const config = await this.blueprintManager.chooseConfiguration({ name });
-        if (config) {
-            const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
-            console.log(`Installing ${colors.cyan(name)}`);
-            if (config.variables.variables.length) {
-                for (const variable of config.variables.variables) {
-                    if (!variables[variable]) {
-                        variables[variable] = await UserInterface.chooseValidVariable(variable);
-                    }
-                }
-            }
-            const skemConfig = config;
-            SkemConfigManager.runHooks(skemConfig.hooks, 'pre-install', path);
-
-            if (skemConfig.isFile) {
-                const fileName = Path.basename(skemConfig.root);
-                const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
-                    fileName,
-                    config.variables.variables,
-                    variables,
-                    SkemConfigManager.getFileNameVariableWrapper(skemConfig)
-                ));
-                let writeFile = true;
-                if (FileManager.exists(newFileName)) {
-                    writeFile = force || await UserInterface.confirmOverwriteOfFile(newFileName);
-                }
-
-                if (writeFile) {
-                    console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
-                    FileManager.writeFileSync(
-                        newFileName,
-                        VariableManager.replaceVariablesInFile(
-                            skemConfig.root,
-                            config.variables.variables,
-                            variables,
-                            SkemConfigManager.getVariableWrapper(skemConfig.root, skemConfig)
-                        )
-                    );
-                }
-            } else {
-                const newRoot = Path.resolve(path);
-                let files = skemConfig.files;
-                console.log(pick);
-                if (pick === null || pick) {
-                    if (pick) {
-                        files = files.filter(f => f.indexOf(pick) > -1);
-                    }
-                    if (files.length === 0) {
-                        console.log('No files could be picked with this filter. Please try with another filter.');
-                        process.exit(1);
-                        return;
-                    }
-                    if (files.length !== 1) {
-                        files = await UserInterface.selectFilesToInstall(files);
-                    }
-                }
-                for (let i = 0; i < files.length; i++) {
-                    const fileName = files[i];
-                    const newFileName = newRoot + VariableManager.replaceVariableInFileName(
-                        fileName,
-                        skemConfig.variables.fileVariables[`${i}`] || [],
-                        variables,
-                        SkemConfigManager.getFileNameVariableWrapper(skemConfig)
-                    );
-                    let writeFile = true;
-                    if (FileManager.exists(newFileName)) {
-                        writeFile = force || await UserInterface.confirmOverwriteOfFile(newFileName);
-                    }
-                    if (writeFile) {
-                        console.log(`Writing "${newFileName.replace(/\\\\/, '/')}"`);
-                        FileManager.writeFileSync(
-                            newFileName,
-                            VariableManager.replaceVariablesInFile(
-                                skemConfig.root + fileName,
-                                skemConfig.variables.fileVariables[`${i}`] || [],
-                                variables,
-                                SkemConfigManager.getVariableWrapper(skemConfig.root + fileName, skemConfig)
-                            )
-                        );
-                    }
-                }
-            }
-            SkemConfigManager.runHooks(skemConfig.hooks, 'post-install', path);
-        }
+    async install(params: SkemOptions): Promise<void> {
+        await this.blueprintInstaller.install(params);
     }
 
     async extractConfigFromProject(
