@@ -141,3 +141,9 @@ before or after the installation of the blueprint (i.e. `npm i`, `yarn i`).
 ### Examples
 
 You can check the [schematics](./schematics) folder for examples about how to use the config files. 
+
+## Todos
+
+- [ ] Variable transformation
+- [ ] Filter variables based on picked files for installation
+- [ ] Pull from Git link

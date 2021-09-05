@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 
 import { VariableManager } from '../../variable-manager';
 import fs from 'fs';
+import SpyInstance = jest.SpyInstance;
 
 jest.mock('fs');
 
@@ -113,6 +114,38 @@ describe('variable-manager', function () {
             expect(fileVariables[1].includes('variable-name')).toEqual(true);
 
             fsMock.mockReset();
+        });
+    });
+    describe('validateName', function () {
+        let exitSpy = jest.spyOn(process, 'exit');
+        beforeEach(() => {
+            exitSpy = jest.spyOn(process, 'exit')
+                .mockImplementationOnce(jest.fn());
+        });
+        afterEach(() => {
+            exitSpy.mockReset();
+        });
+        it('should reject if name is 1 character', function () {
+            expect(VariableManager.validateName('a')).toEqual(false);
+        });
+        it('should reject if name contains forbidden chars', function () {
+            expect(VariableManager.validateName('a$')).toEqual(false);
+        });
+        it('should reject if name starts with no letter', function () {
+            expect(VariableManager.validateName('-a')).toEqual(false);
+            expect(VariableManager.validateName('_a')).toEqual(false);
+            expect(VariableManager.validateName('0a')).toEqual(false);
+        });
+        it('should reject if name ends with no letter or number', function () {
+            expect(VariableManager.validateName('a-')).toEqual(false);
+            expect(VariableManager.validateName('a_')).toEqual(false);
+        });
+        it('should still accept some names', function () {
+            expect(VariableManager.validateName('abcd')).toEqual(true);
+            expect(VariableManager.validateName('ab12')).toEqual(true);
+            expect(VariableManager.validateName('snake_case_name_123')).toEqual(true);
+            expect(VariableManager.validateName('camelCaseName123')).toEqual(true);
+            expect(VariableManager.validateName('kebab-case-name-123')).toEqual(true);
         });
     });
 });
