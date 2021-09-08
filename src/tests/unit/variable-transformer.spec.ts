@@ -90,6 +90,16 @@ describe.only('variable-transformer', function () {
                         .not.toBeUndefined();
                 });
             });
+            describe('modifiers', function () {
+                it('should let through if we use known modifiers', function () {
+                    expect(VariableTransformer.validateTransform('lowerCase(upperCase(snakeCase(pascalCase(camelCase(var1)))))'))
+                        .toBeUndefined();
+                });
+                it('should not let through if we use an unknown modifier', function () {
+                    expect(VariableTransformer.validateTransform('lowerCase(upperCase(snakeCase(testCase(camelCase(var1)))))'))
+                        .not.toBeUndefined();
+                });
+            });
         });
         describe('validateDependencies', function () {
             it('should fail on circular dependency', function () {

@@ -92,6 +92,15 @@ export class VariableTransformer {
             return 'No space allowed in the expression';
         }
         // validate all commands are known
+        const modifiers = transformWithoutConstants.match(/([a-z0-9]+)\(/gi);
+        if (modifiers) {
+            for (let i = 1; i < modifiers.length; i++) {
+                const modifier = modifiers[i].slice(0, modifiers[i].length - 1);
+                if (!variableModifiers.some(m => m === modifier)) {
+                    return `Unknown modifier: "${modifier}"`;
+                }
+            }
+        }
         // validate number of params are correct
         // validate type of params are correct
         return;
