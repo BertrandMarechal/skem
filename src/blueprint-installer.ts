@@ -6,6 +6,7 @@ import Path from 'path';
 import { VariableManager } from './variable-manager';
 import { FileManager } from './file-manager';
 import { BlueprintManager } from './blueprint-manager';
+import { VariableTransformParamsWithDependencies } from './variable-transformer';
 
 export class BlueprintInstaller {
     blueprintManager: BlueprintManager;
@@ -19,25 +20,62 @@ export class BlueprintInstaller {
     async install(
         { path, name, variable: optionsVariables, force, pick }: Pick<SkemOptions, 'path' | 'name' | 'variable' | 'force' | 'pick'>
     ): Promise<void> {
-        const config = await this.blueprintManager.chooseConfiguration({ name });
-        if (config) {
-            const variables: Record<string, string> = this.variableManager.parseOptionsVariables(optionsVariables);
+        const skemConfig = await this.blueprintManager.chooseConfiguration({ name });
+        if (skemConfig) {
             console.log(`Installing ${colors.cyan(name)}`);
-            if (config.variables.variables.length) {
-                for (const variable of config.variables.variables) {
-                    if (!variables[variable]) {
-                        variables[variable] = await UserInterface.chooseValidVariable(variable);
+            SkemConfigManager.runHooks(skemConfig.hooks, 'pre-install', path);
+
+            let originalFiles: string[] = [];
+            let selectedFiles: string[] = [];
+
+            if (skemConfig.isFile) {
+                originalFiles = [skemConfig.root];
+                selectedFiles = [skemConfig.root];
+            } else {
+                originalFiles = skemConfig.files;
+                selectedFiles = skemConfig.files;
+                if (pick === null || pick) {
+                    if (pick) {
+                        selectedFiles = originalFiles.filter(f => f.indexOf(pick) > -1);
+                    }
+                    if (selectedFiles.length === 0) {
+                        console.log('No files could be picked with this filter. Please try with another filter.');
+                        process.exit(1);
+                        return;
+                    }
+                    if (selectedFiles.length !== 1) {
+                        selectedFiles = await UserInterface.selectFilesToInstall(originalFiles);
                     }
                 }
             }
-            const skemConfig = config;
-            SkemConfigManager.runHooks(skemConfig.hooks, 'pre-install', path);
+
+            const variablesTransform: Record<string, VariableTransformParamsWithDependencies> = {};
+
+            const variablesResolved: Record<string, string | null> = VariableManager.resolveVariables(
+                skemConfig.variables,
+                this.variableManager.parseOptionsVariables(optionsVariables),
+                originalFiles,
+                selectedFiles,
+                variablesTransform,
+            );
+            const variables: Record<string, string> = {};
+
+            for (const key of Object.keys(variablesResolved)) {
+                if (variablesResolved[key]) {
+                    variables[key] = variablesResolved[key] as string;
+                    if (variablesTransform[key] && !variablesTransform[key].skipIfDefined) {
+                        variables[key] = await UserInterface.chooseValidVariable(key, variablesResolved[key]);
+                    }
+                } else if (!variables[key]) {
+                    variables[key] = await UserInterface.chooseValidVariable(key);
+                }
+            }
 
             if (skemConfig.isFile) {
                 const fileName = Path.basename(skemConfig.root);
                 const newFileName = Path.resolve(path, VariableManager.replaceVariableInFileName(
                     fileName,
-                    config.variables.variables,
+                    skemConfig.variables.variables,
                     variables,
                     SkemConfigManager.getFileNameVariableWrapper(skemConfig)
                 ));
@@ -52,7 +90,7 @@ export class BlueprintInstaller {
                         newFileName,
                         VariableManager.replaceVariablesInFile(
                             skemConfig.root,
-                            config.variables.variables,
+                            skemConfig.variables.variables,
                             variables,
                             SkemConfigManager.getVariableWrapper(skemConfig.root, skemConfig)
                         )
@@ -60,23 +98,8 @@ export class BlueprintInstaller {
                 }
             } else {
                 const newRoot = Path.resolve(path);
-                let files = skemConfig.files;
-                console.log(pick);
-                if (pick === null || pick) {
-                    if (pick) {
-                        files = files.filter(f => f.indexOf(pick) > -1);
-                    }
-                    if (files.length === 0) {
-                        console.log('No files could be picked with this filter. Please try with another filter.');
-                        process.exit(1);
-                        return;
-                    }
-                    if (files.length !== 1) {
-                        files = await UserInterface.selectFilesToInstall(files);
-                    }
-                }
-                for (let i = 0; i < files.length; i++) {
-                    const fileName = files[i];
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const fileName = selectedFiles[i];
                     const originalIndex = skemConfig.files.findIndex(f => f === fileName);
                     const newFileName = Path.resolve(newRoot, VariableManager.replaceVariableInFileName(
                         fileName,

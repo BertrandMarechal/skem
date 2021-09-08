@@ -1,6 +1,12 @@
 import fs from 'fs';
 import Path from 'path';
 import child_process from 'child_process';
+import {
+    SkemConfigVariableTransform,
+    VariableTransformer,
+    VariableTransformParams,
+    VariableTransformParamsWithDependencies
+} from './variable-transformer';
 
 export const CONFIGURATION_FILE_NAME = 'skem.config.json';
 export const DEFAULT_VARIABLE_WRAPPER = '______';
@@ -36,7 +42,7 @@ export class SkemHook {
 export interface SkemHooks {
     hooks: SkemHook[];
 }
-export interface SkemConfig extends SkemConfigWrappers, SkemHooks {
+export interface SkemConfig extends SkemConfigWrappers, SkemHooks, SkemConfigVariableTransform {
     name?: string;
     singleFile?: string;
     singleFiles?: {
@@ -117,6 +123,19 @@ export class SkemConfigManager {
         return this._config?.hooks || [];
     }
 
+    public get variableTransform(): Record<string, VariableTransformParamsWithDependencies> {
+        if (this._config?.variableTransform) {
+            const variableTransformWithDependencies: Record<string, VariableTransformParamsWithDependencies> = {};
+            const keys = Object.keys(this._config.variableTransform);
+            for (const key of keys) {
+                variableTransformWithDependencies[key] =
+                    VariableTransformer.parseTransformer(this._config.variableTransform[key]);
+            }
+            return variableTransformWithDependencies;
+        }
+        return {};
+    }
+
     public static getFileNameVariableWrapper(config: SkemConfigWrappers): [string, string] {
         return SkemConfigManager.splitWrapperIn2(config.fileNameVariableWrapper || DEFAULT_VARIABLE_WRAPPER);
     }
@@ -148,7 +167,6 @@ export class SkemConfigManager {
     }
 
     private _validateConfig() {
-        console.log(this._config);
         if (this._config?.singleFile && this._config?.singleFiles?.length) {
             console.error(`Invalid config in "${this._fileName}": Please provide either singleFile or singleFiles, but not both.`);
             process.exit(1);
@@ -186,6 +204,26 @@ export class SkemConfigManager {
             for (const hook of this._config.hooks) {
                 if (!hook.isValid()) {
                     console.error(`Invalid config in "${this._fileName}": one of the hooks is invalid.`);
+                    process.exit(1);
+                    return;
+                }
+            }
+        }
+        if (this._config?.variableTransform) {
+            let errorMessage: string | undefined = VariableTransformer.validateDependencies(this.variableTransform);
+
+            if (errorMessage) {
+                console.error(`Invalid config in "${this._fileName}": variableTransform has an error: ${errorMessage}.`);
+                process.exit(1);
+                return;
+            }
+
+            const keys = Object.keys(this._config.variableTransform);
+            for (const key of keys) {
+                errorMessage = VariableTransformer.validateTransform(this._config?.variableTransform[key].transform);
+
+                if (errorMessage) {
+                    console.error(`Invalid config in "${this._fileName}": variableTransform "${key}" has an error: ${errorMessage}.`);
                     process.exit(1);
                     return;
                 }

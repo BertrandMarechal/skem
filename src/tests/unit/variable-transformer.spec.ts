@@ -1,6 +1,6 @@
-import { VariableModifiers, VariableTransformer } from '../../variable-transformer';
+import { VariableModifiers, VariableTransformer, VariableTransformParams } from '../../variable-transformer';
 
-describe('variable-transformer', function () {
+describe.only('variable-transformer', function () {
     describe('VariableTransformer', function () {
         describe('transform', function () {
             it('should return the variable value if no transformation is set up', function () {
@@ -33,6 +33,104 @@ describe('variable-transformer', function () {
                     },
                     { var: 'value', otherVar: 'other-value', andAnotherVar: 'AndAnotherValue' }
                 )).toEqual('OTHER_VALUE@and-another-amazing-valueable');
+            });
+        });
+        describe('getRelatedVariables', function () {
+            it('should return one variable if one is needed on simple case', function () {
+                const result = VariableTransformer.getRelatedVariables(
+                    'camelCase(var1)'
+                );
+                expect(result).toEqual(['var1']);
+            });
+            it('should return one variable if one is needed on complex case', function () {
+                const result = VariableTransformer.getRelatedVariables(
+                    'lowerCase(upperCase(snakeCase(pascalCase(camelCase(var1)))))'
+                );
+                expect(result).toEqual(['var1']);
+            });
+            it('should return 2 variables if 2 are needed', function () {
+                const result = VariableTransformer.getRelatedVariables(
+                    'concat(var2,var1,replace("",var1,var2))'
+                );
+                expect(result).toEqual(['var2', 'var1']);
+            });
+            it('should deal with strings', function () {
+                const result = VariableTransformer.getRelatedVariables(
+                    'replace(var1,"-","_")'
+                );
+                expect(result).toEqual(['var1']);
+            });
+        });
+        describe('parseTransformer', () => {
+            it('should return with the input parameters plus the dependencies', function () {
+                const params:VariableTransformParams = {
+                    transform: 'camelCase(otherVar)',
+                    skipIfDefined: true,
+                };
+                const getRelatedVariablesSpy = jest.spyOn(VariableTransformer, 'getRelatedVariables')
+                    .mockImplementationOnce(() => ['dep1', 'dep2']);
+
+                const result = VariableTransformer.parseTransformer(params);
+
+                expect(getRelatedVariablesSpy).toHaveBeenCalledWith(params.transform);
+                expect(result.transform).toEqual(params.transform);
+                expect(result.skipIfDefined).toEqual(params.skipIfDefined);
+                expect(result.dependencies).toEqual(['dep1', 'dep2']);
+
+            });
+        });
+        describe('validateTransform', function () {
+            describe('space', function () {
+                it('should let through if we have no space', function () {
+                    expect(VariableTransformer.validateTransform('camelCase(var1,"test of space")'))
+                        .toBeUndefined();
+                });
+                it('should not let through if we have space', function () {
+                    expect(VariableTransformer.validateTransform('camelCase(var1, "test of space")'))
+                        .not.toBeUndefined();
+                });
+            });
+        });
+        describe('validateDependencies', function () {
+            it('should fail on circular dependency', function () {
+                expect(VariableTransformer.validateDependencies({
+                    var1: {
+                        transform: '',
+                        dependencies: ['var2']
+                    },
+                    var2: {
+                        transform: '',
+                        dependencies: ['var3']
+                    },
+                    var3: {
+                        transform: '',
+                        dependencies: ['var1']
+                    }
+                })).not.toBeUndefined();
+            });
+            it('should fail on self dependency', function () {
+                expect(VariableTransformer.validateDependencies({
+                    var1: {
+                        transform: '',
+                        dependencies: ['var1']
+                    },
+                })).not.toBeUndefined();
+            });
+            it('should not fail on no circular dependency', function () {
+                expect(VariableTransformer.validateDependencies({
+                    var1: {
+                        transform: '',
+                        dependencies: ['var2']
+                    },
+                    var2: {
+                        transform: '',
+                        dependencies: ['var3']
+                    },
+                    var3: {
+                        transform: '',
+                        dependencies: []
+                    }
+                })).toBeUndefined();
             });
         });
     });
@@ -168,6 +266,14 @@ describe('variable-transformer', function () {
         describe('join', function () {
             it('should concatenate the strings', function () {
                 expect(VariableModifiers.join('-', 'LOW', 'CASE', 'STRING')).toEqual('LOW-CASE-STRING');
+            });
+        });
+        describe('join', function () {
+            it('should return the split part if found', function () {
+                expect(VariableModifiers.splitPart('to-split', '-', '1')).toEqual('split');
+            });
+            it('should return "undefined" if not found', function () {
+                expect(VariableModifiers.splitPart('to-split', '-', '2')).toBeUndefined();
             });
         });
     });

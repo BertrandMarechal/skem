@@ -2,7 +2,6 @@ import { jest } from '@jest/globals';
 
 import { VariableManager } from '../../variable-manager';
 import fs from 'fs';
-import SpyInstance = jest.SpyInstance;
 
 jest.mock('fs');
 
@@ -40,6 +39,83 @@ describe('variable-manager', function () {
             ]);
 
             expect(exitSpy).not.toHaveBeenCalled();
+        });
+    });
+    describe('resolveVariables', function () {
+        it('should not return any variables if no variables are needed', function () {
+            const result = VariableManager.resolveVariables(
+                {
+                    variables: [],
+                    fileVariables:{},
+                    variablesInFiles: [],
+                },
+                {},
+                [],
+                [],
+                {}
+            );
+            expect(Object.keys(result).length).toEqual(0);
+        });
+        it('should filter the needed variables on the selected files only', function () {
+            const result = VariableManager.resolveVariables(
+                {
+                    variables: ['var1', 'var2', 'var3'],
+                    fileVariables:{
+                        1: ['var2']
+                    },
+                    variablesInFiles: [],
+                },
+                {},
+                ['file1', 'file2'],
+                ['file2'],
+                {}
+            );
+            expect(Object.keys(result).length).toEqual(1);
+            expect(result).toEqual({ var2: null });
+        });
+        it('should add to the variables to get the variables that are listed as dependencies', function () {
+            const result = VariableManager.resolveVariables(
+                {
+                    variables: ['var1', 'var2', 'var3'],
+                    fileVariables:{
+                        1: ['var3']
+                    },
+                    variablesInFiles: [],
+                },
+                {},
+                ['file1', 'file2'],
+                ['file2'],
+                {
+                    var3: {
+                        transform: 'camelCase(var2)',
+                        dependencies: ['var2']
+                    }
+                }
+            );
+            expect(Object.keys(result).length).toEqual(2);
+            expect(result).toEqual({ var2: null, var3: null });
+        });
+        it('should default the values correctly if provided', function () {
+            const result = VariableManager.resolveVariables(
+                {
+                    variables: ['var1', 'var2', 'var3'],
+                    fileVariables:{
+                        1: ['var3']
+                    },
+                    variablesInFiles: [],
+                },
+                { var2: 'var2Value'},
+                ['file1', 'file2'],
+                ['file2'],
+                {
+                    var3: {
+                        transform: 'camelCase(var2)',
+                        dependencies: ['var2']
+                    }
+                }
+            );
+            expect(Object.keys(result).length).toEqual(2);
+            expect(result).toEqual({ var2: 'var2Value', var3: null });
         });
     });
     describe('replaceVariableInFileName', () => {

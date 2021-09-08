@@ -8,6 +8,7 @@ jest.mock('fs', () => mockFS);
 jest.mock('child_process');
 
 import { SkemConfigManager, SkemHook } from '../../skem-config-manager';
+import { VariableTransformParams } from '../../variable-transformer';
 
 describe('skem-config-manager', function () {
     beforeEach(() => {
@@ -218,6 +219,27 @@ describe('skem-config-manager', function () {
             expect(hookResponse[0].command).toEqual(hooks[0].command);
         });
     });
+    describe('variableTransform', () => {
+        it('should return the ones set up in the file', () => {
+            const variableTransform: Record<string, VariableTransformParams> = {
+                var2: {
+                    transform: 'camelCase(var1)'
+                }
+            };
+            jest.spyOn(mockFS, 'readFileSync')
+                .mockImplementationOnce(() => JSON.stringify({ variableTransform }));
+
+            const skemConfigManager = new SkemConfigManager('fileName');
+            const variableTransformResponse = skemConfigManager.variableTransform;
+
+            expect(variableTransformResponse).toEqual({
+                var2: {
+                    transform: 'camelCase(var1)',
+                    dependencies: ['var1']
+                }
+            });
+        });
+    });
     describe('getFileNameVariableWrapper', () => {
         it('should return the default if fileNameVariableWrapper not provided', () => {
             expect(SkemConfigManager.getFileNameVariableWrapper({})).toEqual(['___', '___']);
@@ -271,90 +293,98 @@ describe('skem-config-manager', function () {
         });
     });
     describe('_validateConfig', () => {
-        it('should not allow singleFile and singleFiles', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    singleFile: 'singleFile',
-                    singleFiles: [{ name: 'singleFile1', file: 'singleFile1' }],
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
+        describe('singleFile', function () {
 
-            new SkemConfigManager('fileName');
+            it('should not allow singleFile and singleFiles', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        singleFile: 'singleFile',
+                        singleFiles: [{ name: 'singleFile1', file: 'singleFile1' }],
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
 
-            expect(exitSpy).toHaveBeenCalledWith(1);
+                new SkemConfigManager('fileName');
+
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
         });
-        it('should not allow an invalid fileNameVariableWrapper', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    fileNameVariableWrapper: '---',
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
+        describe('wrappers', function () {
 
-            new SkemConfigManager('fileName');
+            it('should not allow an invalid fileNameVariableWrapper', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        fileNameVariableWrapper: '---',
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
 
-            expect(exitSpy).toHaveBeenCalledWith(1);
+                new SkemConfigManager('fileName');
+
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
+            it('should not allow an invalid variableWrapper', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        variableWrapper: '---',
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
+
+                new SkemConfigManager('fileName');
+
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
+            it('should not allow a invalid variableWrappers', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        variableWrappers: [{ extrnsion: 'js', wrapper: '---' }],
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
+
+                new SkemConfigManager('fileName');
+
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
+            it('should not allow multiple variableWrappers with same extension', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        variableWrappers: [{ extrnsion: 'js', wrapper: '----' }, { extrnsion: 'js', wrapper: '____' }],
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
+
+                new SkemConfigManager('fileName');
+
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
         });
-        it('should not allow an invalid variableWrapper', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    variableWrapper: '---',
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
+        describe('hooks', function () {
+            it('should not badly set up hooks on bad type', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        hooks: [{ type: 'test', command: 'npm install' }],
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
 
-            new SkemConfigManager('fileName');
+                new SkemConfigManager('fileName');
 
-            expect(exitSpy).toHaveBeenCalledWith(1);
-        });
-        it('should not allow a invalid variableWrappers', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    variableWrappers: [{extrnsion: 'js', wrapper: '---'}],
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
+            it('should not badly set up hooks on empty command', () => {
+                jest.spyOn(mockFS, 'readFileSync')
+                    .mockImplementationOnce(() => JSON.stringify({
+                        hooks: [{ type: 'pre-install', command: '' }],
+                    }));
+                const exitSpy = jest.spyOn(process, 'exit')
+                    .mockImplementationOnce(jest.fn());
 
-            new SkemConfigManager('fileName');
+                new SkemConfigManager('fileName');
 
-            expect(exitSpy).toHaveBeenCalledWith(1);
-        });
-        it('should not allow multiple variableWrappers with same extension', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    variableWrappers: [{extrnsion: 'js', wrapper: '----'}, {extrnsion: 'js', wrapper: '____'}],
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
-
-            new SkemConfigManager('fileName');
-
-            expect(exitSpy).toHaveBeenCalledWith(1);
-        });
-        it('should not badly set up hooks on bad type', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    hooks: [{ type: 'test', command: 'npm install' }],
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
-
-            new SkemConfigManager('fileName');
-
-            expect(exitSpy).toHaveBeenCalledWith(1);
-        });
-        it('should not badly set up hooks on empty command', () => {
-            jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({
-                    hooks: [{ type: 'pre-install', command: '' }],
-                }));
-            const exitSpy = jest.spyOn(process, 'exit')
-                .mockImplementationOnce(jest.fn());
-
-            new SkemConfigManager('fileName');
-
-            expect(exitSpy).toHaveBeenCalledWith(1);
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            });
         });
     });
 });

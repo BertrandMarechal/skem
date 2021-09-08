@@ -89,7 +89,7 @@ describe('user-interface', function () {
         });
     });
     describe('chooseValidVariable', () => {
-        it('should return the selected config', async () => {
+        it('should return the value the user entered value', async () => {
             let first = true;
             const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
                 .mockImplementation(async () => {
@@ -111,6 +111,46 @@ describe('user-interface', function () {
             expect(inquirerPromptSpy).toHaveBeenCalledWith({
                 type: 'input',
                 message: 'Please provide a value for variable "var":',
+                name: 'response'
+            });
+
+            inquirerPromptSpy.mockReset();
+        });
+        it('should return the value the user entered after being prompted there is a default one', async () => {
+            const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
+                .mockImplementation(async () => {
+                    return {
+                        response: 'value'
+                    } as never;
+                });
+
+            const response = await UserInterface.chooseValidVariable('var', 'currentValue');
+
+            expect(response).toEqual('value');
+            expect(inquirerPromptSpy).toHaveBeenCalledTimes(1);
+            expect(inquirerPromptSpy).toHaveBeenCalledWith({
+                type: 'input',
+                message: 'Please provide a value for variable "var" (current value: "currentValue". Press enter to carry on with it):',
+                name: 'response'
+            });
+
+            inquirerPromptSpy.mockReset();
+        });
+        it('should return the default value if user did not enter one', async () => {
+            const inquirerPromptSpy = jest.spyOn(inquirer, 'prompt')
+                .mockImplementation(async () => {
+                    return {
+                        response: ''
+                    } as never;
+                });
+
+            const response = await UserInterface.chooseValidVariable('var', 'currentValue');
+
+            expect(response).toEqual('currentValue');
+            expect(inquirerPromptSpy).toHaveBeenCalledTimes(1);
+            expect(inquirerPromptSpy).toHaveBeenCalledWith({
+                type: 'input',
+                message: 'Please provide a value for variable "var" (current value: "currentValue". Press enter to carry on with it):',
                 name: 'response'
             });
 

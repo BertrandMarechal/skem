@@ -7,6 +7,7 @@ import { FileManager } from './file-manager';
 import { UserInterface } from './user-interface';
 import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers, SkemHook } from './skem-config-manager';
 import { BlueprintInstaller } from './blueprint-installer';
+import { SkemConfigVariableTransform, VariableTransformParamsWithDependencies } from './variable-transformer';
 
 export class Skem {
     blueprintManager: BlueprintManager;
@@ -37,6 +38,7 @@ export class Skem {
         const isDirectory = FileManager.isDirectory(path);
         let skemWrappers: SkemConfigWrappers = {};
         let skemHooks: SkemHook[] = [];
+        let skemVariableTransform: Record<string, VariableTransformParamsWithDependencies> = {};
         const addOrUpdate = isUpdate ? 'Updat' : 'Add';
 
         if (isDirectory) {
@@ -44,6 +46,7 @@ export class Skem {
                 skemConfig = new SkemConfigManager(Path.resolve(path, CONFIGURATION_FILE_NAME));
                 skemWrappers = skemConfig.skemWrappers;
                 skemHooks = skemConfig.hooks;
+                skemVariableTransform = skemConfig.variableTransform;
                 if (skemConfig.isSingleFiles) {
                     const singleBlueprints = skemConfig.singleFiles;
                     for (const singleBlueprint of singleBlueprints) {
@@ -109,6 +112,7 @@ export class Skem {
                         }),
                     },
                     ...skemWrappers,
+                    variableTransform: skemVariableTransform,
                     hooks: skemHooks
                 }
             );

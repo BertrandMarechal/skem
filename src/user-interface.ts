@@ -38,14 +38,21 @@ export class UserInterface {
         return configName;
     }
 
-    static async chooseValidVariable(variableName: string): Promise<string> {
+    static async chooseValidVariable(variableName: string, currentValue?: string | null): Promise<string> {
         let variable = '';
+        let currentValueDisplay = '';
+        if (currentValue) {
+            currentValueDisplay = ` (current value: "${currentValue}". Press enter to carry on with it)`;
+        }
         while (!variable) {
             const { response } = await inquirer.prompt({
                 type: 'input',
-                message: `Please provide a value for variable "${variableName}":`,
+                message: `Please provide a value for variable "${variableName}"${currentValueDisplay}:`,
                 name: 'response'
             });
+            if (!response && currentValue) {
+                return currentValue;
+            }
             variable = response;
         }
         return variable;

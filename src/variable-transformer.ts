@@ -2,8 +2,15 @@ export interface VariableTransformParams {
     transform: string;
     skipIfDefined?: boolean;
 }
+export interface VariableTransformParamsWithDependencies extends VariableTransformParams {
+    dependencies: string[];
+}
 
-export const variableModifiers: string[] = [
+export interface SkemConfigVariableTransform {
+    variableTransform?: Record<string, VariableTransformParams>;
+}
+
+const variableModifiers = [
     'camelCase',
     'pascalCase',
     'snakeCase',
@@ -15,6 +22,7 @@ export const variableModifiers: string[] = [
     'replace',
     'concat',
     'join',
+    'splitPart',
 ];
 
 export class VariableTransformer {
@@ -46,6 +54,73 @@ export class VariableTransformer {
             return currentTransform;
         }
         return variables[variableName];
+    }
+
+    static getRelatedVariables(transform: string): string[] {
+        let transformWithoutModifiers = transform
+            .replace(/["'].*?["']/g, '');
+        for (const variableModifier of variableModifiers) {
+            while(new RegExp(`${variableModifier}\\(([^()]+)\\)`, 'ig').test(transformWithoutModifiers)) {
+                transformWithoutModifiers = transformWithoutModifiers
+                    .replace(new RegExp(`${variableModifier}\\(([^()]+)\\)`, 'ig'), '$1');
+            }
+        }
+        const variableNames = transformWithoutModifiers
+            .split(',')
+            .filter(v => !!v && !/^[0-9]+$/.test(v))
+            .map(v => v.trim());
+        return variableNames.reduce((agg: string[], curr) => {
+            if (!agg.some(v => curr === v)) {
+                agg.push(curr);
+            }
+            return agg;
+        }, []);
+    }
+
+    static parseTransformer(input: VariableTransformParams ): VariableTransformParamsWithDependencies {
+        return {
+            ...input,
+            dependencies: VariableTransformer.getRelatedVariables(input.transform)
+        };
+    }
+
+    static validateTransform(transform: string): string | undefined {
+        // validate there are no spaces
+        const transformWithoutConstants = transform
+            .replace(/["'].*?["']/g, '');
+        if (transformWithoutConstants.indexOf(' ') > -1) {
+            return 'No space allowed in the expression';
+        }
+        // validate all commands are known
+        // validate number of params are correct
+        // validate type of params are correct
+        return;
+    }
+
+    static validateDependencies(variableTransform: Record<string, VariableTransformParamsWithDependencies>): string | undefined {
+        const keys = Object.keys(variableTransform);
+        for (const key of keys) {
+            for (const dependency of variableTransform[key]?.dependencies) {
+                if (VariableTransformer.returnIfCircularDependency(key, dependency, variableTransform)) {
+                    return 'Circular dependency';
+                }
+            }
+        }
+        return;
+    }
+
+    private static returnIfCircularDependency(topVariableName: string, variableName: string, variableTransform: Record<string, VariableTransformParamsWithDependencies>) {
+        if (variableTransform[variableName]?.dependencies) {
+            for (const dependency of variableTransform[variableName]?.dependencies) {
+                if (topVariableName === dependency) {
+                    return true;
+                }
+                if (VariableTransformer.returnIfCircularDependency(topVariableName, dependency, variableTransform)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
@@ -158,5 +233,11 @@ export class VariableModifiers {
     static join(...values: string[]): string {
         const [separator, ...valuesToJoin] = values;
         return valuesToJoin.join(separator);
+    }
+
+    static splitPart(...values: string[]): string {
+        const [val, splitWith, part] = values;
+        const partIndex = +part;
+        return val.split(splitWith)[partIndex];
     }
 }

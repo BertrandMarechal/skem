@@ -134,7 +134,8 @@ describe('skem', function () {
                                 { file: '', name: 'v2' },
                             ],
                         },
-                        hooks: []
+                        hooks: [],
+                        variableTransform: {},
                     });
                     isDirectorySpy.mockReset();
                     getFileListSpy.mockReset();
@@ -180,7 +181,8 @@ describe('skem', function () {
                                 { file: '', name: 'v2' },
                             ],
                         },
-                        hooks: []
+                        hooks: [],
+                        variableTransform: {},
                     });
                     isDirectorySpy.mockReset();
                     getFileListSpy.mockReset();
@@ -226,7 +228,8 @@ describe('skem', function () {
                                 { file: '', name: 'v2' },
                             ],
                         },
-                        hooks: []
+                        hooks: [],
+                        variableTransform: {},
                     });
                     isDirectorySpy.mockReset();
                     getFileListSpy.mockReset();
@@ -322,7 +325,8 @@ describe('skem', function () {
                                 { file: '\\file2.ts', name: 'v2' },
                             ],
                         },
-                        hooks: []
+                        hooks: [],
+                        variableTransform: {},
                     });
                     isDirectorySpy.mockReset();
                     getFileListSpy.mockReset();
@@ -375,7 +379,8 @@ describe('skem', function () {
                             ],
                         },
                         ...defaultWrappers,
-                        hooks: []
+                        hooks: [],
+                        variableTransform: {},
                     });
                     isDirectorySpy.mockReset();
                     getFileListSpy.mockReset();

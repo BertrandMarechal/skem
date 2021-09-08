@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { SkemVariables } from './blueprint-manager';
 import { SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
-import { VariableModifiers } from './variable-transformer';
+import { VariableTransformParamsWithDependencies } from './variable-transformer';
 
 export class VariableManager {
     parseOptionsVariables(optionVariables: string[]): Record<string, string> {
@@ -23,6 +23,50 @@ export class VariableManager {
             }
         }
         return variables;
+    }
+
+    static resolveVariables(
+        configVariables: SkemVariables,
+        variables: Record<string, string>,
+        originalFiles: string[],
+        selectedFiles: string[],
+        variableTransform: Record<string, VariableTransformParamsWithDependencies>
+    ): Record<string, string | null> {
+        const newVariables: Record<string, string | null> = {...variables};
+        const variablesInSelectedFiles = originalFiles.reduce((agg: string[], file, i) => {
+            if (selectedFiles.some(f => f === file)) {
+                const fileVariables = configVariables.fileVariables[i] || [];
+                for (const fileVariable of fileVariables) {
+                    if (!agg.some(v => v === fileVariable)) {
+                        agg.push(fileVariable);
+                    }
+                }
+            }
+            return agg;
+        }, []);
+        for (const variableInSelectedFiles of variablesInSelectedFiles) {
+            newVariables[variableInSelectedFiles] = variables[variableInSelectedFiles] || null;
+        }
+        const variablesToGetInSelectedFiles = variablesInSelectedFiles.filter(v => !variables[v]);
+        const unresolvedVariableDependencies = variablesToGetInSelectedFiles
+            .map(v => {
+                if (variableTransform[v]) {
+                    return variableTransform[v].dependencies;
+                }
+                return [];
+            })
+            .reduce((agg: string[], curr: string[]) => {
+                for (const item of curr) {
+                    if (!variables[item] && !agg.some(v => v === item)) {
+                        agg.push(item);
+                    }
+                }
+                return agg;
+            }, []);
+        for (const unresolvedVariableDependency of unresolvedVariableDependencies) {
+            newVariables[unresolvedVariableDependency] = null;
+        }
+        return newVariables;
     }
 
     static replaceVariableInFileName(
