@@ -2,6 +2,7 @@ import fs from 'fs';
 import Path from 'path';
 
 import gitignoreParser from '@gerhobbelt/gitignore-parser';
+import path from 'path';
 
 const ignoredPaths = [
     'node_modules',
@@ -105,6 +106,10 @@ export class FileManager {
             this.createFolderIfNotExistsSync(splitPath.splice(0, depth + 1).join('/'));
             this.createFolderStructureIfNeeded(path, depth + 1);
         }
+    }
+
+    static deleteTempFolder(folderName: string): void {
+        fs.rmdirSync(path.resolve(`./temp/${folderName}`), { recursive: true });
     }
 
 }

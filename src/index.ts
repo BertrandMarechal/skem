@@ -22,7 +22,9 @@ export async function main(): Promise<void> {
             break;
         case 'add':
         case 'a':
-            if (options.repo) {
+            if (options.git) {
+                await skem.addFromGit(options);
+            } else if (options.repo) {
                 await skem.loopOnSubFoldersAndExtractConfigFromProject(options);
             } else {
                 await skem.extractConfigFromProject(options);

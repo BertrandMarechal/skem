@@ -77,6 +77,12 @@ const mockConfigManager = new MockConfigManager();
 jest.mock('../../blueprint-manager', () => ({
     BlueprintManager: jest.fn(() => mockConfigManager)
 }));
+jest.mock('uuid', () => ({ v4: () => 'uuid' }));
+const mockChildProcess = {
+    execSync: jest.fn(),
+};
+jest.mock('child_process', () => mockChildProcess);
+jest.mock('uuid', () => ({ v4: () => 'uuid' }));
 
 
 import { Skem } from '../../skem';
@@ -241,8 +247,7 @@ describe('skem', function () {
                     jest.spyOn(UserInterface, 'chooseValidNameForBlueprint')
                         .mockImplementationOnce(async () => 'configName');
                     const confirmOverwriteOfBlueprintOrExitSpy = jest.spyOn(UserInterface, 'confirmOverwriteOfBlueprintOrExit')
-                        .mockImplementationOnce(async (): Promise<void> => {
-                        });
+                        .mockImplementationOnce(jest.fn());
                     jest.spyOn(mockConfigManager, 'config', 'get')
                         .mockReturnValueOnce({ configName: {} });
                     const getFileListSpy = jest.spyOn(FileManager, 'getFileList')
@@ -566,6 +571,33 @@ describe('skem', function () {
             await new Skem().printConfig({ name: 'config' });
 
             expect(printConfigSpy).toHaveBeenCalledWith({ name: 'config' });
+        });
+    });
+    describe('addFromGit', function () {
+        it('should call git clone and extractConfigFromProject', async function () {
+            const skem = new Skem();
+            const createFolderIfNotExistsSyncSpy = jest.spyOn(FileManager, 'createFolderIfNotExistsSync')
+                .mockImplementationOnce(jest.fn());
+            const deleteTempFolderSpy = jest.spyOn(FileManager, 'deleteTempFolder')
+                .mockImplementationOnce(jest.fn());
+            const execSyncSpy = jest.spyOn(mockChildProcess, 'execSync')
+                .mockImplementationOnce(jest.fn());
+            const extractConfigFromProjectSpy = jest.spyOn(skem, 'extractConfigFromProject')
+                .mockImplementationOnce(jest.fn());
+
+            await skem.addFromGit({ git: 'https://git.com' });
+
+            expect(createFolderIfNotExistsSyncSpy).toHaveBeenCalledWith('./temp');
+            expect(execSyncSpy).toHaveBeenCalledWith(
+                'git clone https://git.com ./temp/uuid',
+                { stdio: [0, 1, 2] }
+            );
+            expect(extractConfigFromProjectSpy).toHaveBeenCalledWith({
+                git: 'https://git.com',
+                path: './temp/uuid',
+                name: ''
+            });
+            expect(deleteTempFolderSpy).toHaveBeenCalledWith('uuid');
         });
     });
 });

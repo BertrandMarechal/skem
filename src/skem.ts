@@ -7,7 +7,9 @@ import { FileManager } from './file-manager';
 import { UserInterface } from './user-interface';
 import { CONFIGURATION_FILE_NAME, SkemConfigManager, SkemConfigWrappers, SkemHook } from './skem-config-manager';
 import { BlueprintInstaller } from './blueprint-installer';
-import { SkemConfigVariableTransform, VariableTransformParamsWithDependencies } from './variable-transformer';
+import { VariableTransformParamsWithDependencies } from './variable-transformer';
+import { v4 } from 'uuid';
+import child_process from 'child_process';
 
 export class Skem {
     blueprintManager: BlueprintManager;
@@ -181,5 +183,21 @@ export class Skem {
 
     async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
         await this.blueprintManager.printConfig({ name });
+    }
+
+    async addFromGit(options: Pick<SkemOptions, 'git'>): Promise<void> {
+        const folderName = v4();
+        FileManager.createFolderIfNotExistsSync('./temp');
+        child_process.execSync(
+            `git clone ${options.git} ./temp/${folderName}`,
+            { stdio: [0, 1, 2] }
+        );
+
+        await this.extractConfigFromProject({
+            name: '',
+            ...options,
+            path: `./temp/${folderName}`,
+        });
+        FileManager.deleteTempFolder(folderName);
     }
 }

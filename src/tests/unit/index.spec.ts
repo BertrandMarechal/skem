@@ -4,6 +4,7 @@ import { CommandLineUsage } from '../../command-line';
 
 const mockSkem = {
     install: jest.fn(),
+    addFromGit: jest.fn(),
     loopOnSubFoldersAndExtractConfigFromProject: jest.fn(),
     extractConfigFromProject: jest.fn(),
     removeFromConfig: jest.fn(),
@@ -182,6 +183,25 @@ describe('index', () => {
                         ...options,
                         command: 'a',
                         repo: true,
+                    });
+                });
+            });
+            describe('git', function () {
+                it('should call addFromGit if it is a git repo', function () {
+                    jest.spyOn(CommandLineArgs, 'options', 'get')
+                        .mockImplementationOnce(() => ({
+                            ...options,
+                            command: 'add',
+                            git: 'https://git.com',
+                        }));
+                    const addFromGitSpy = jest.spyOn(mockSkem, 'addFromGit');
+
+                    main();
+
+                    expect(addFromGitSpy).toHaveBeenCalledWith({
+                        ...options,
+                        command: 'add',
+                        git: 'https://git.com',
                     });
                 });
             });

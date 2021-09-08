@@ -7,6 +7,7 @@ const mockFS = {
     writeFileSync: jest.fn(),
     mkdirSync: jest.fn(),
     readFileSync: jest.fn(),
+    rmdirSync: jest.fn(),
 };
 const gitignoreDenier = {
     denies: jest.fn((_path: string) => false),
@@ -19,6 +20,7 @@ jest.mock('@gerhobbelt/gitignore-parser', () => mockGitIgnoreParser);
 
 import { FileManager } from '../../file-manager';
 import Path from 'path';
+import path from 'path';
 
 describe('file-manager', function () {
     afterEach(() => {
@@ -213,6 +215,15 @@ describe('file-manager', function () {
 
             expect(createFolderIfNotExistsSyncSpy).toHaveBeenCalledWith('a/test');
             expect(createFolderIfNotExistsSyncSpy).toHaveBeenCalledTimes(1);
+        });
+    });
+    describe('deleteTempFolder', function () {
+        it('should call rmdirSync', () => {
+            const rmdirSyncSpy = jest.spyOn(mockFS, 'rmdirSync');
+
+            FileManager.deleteTempFolder('path');
+
+            expect(rmdirSyncSpy).toHaveBeenCalledWith(path.resolve('./temp/path'), { recursive: true });
         });
     });
 });

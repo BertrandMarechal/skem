@@ -82,6 +82,11 @@ export const help: Record<string, Section[]> = {
                     defaultValue: '.'
                 },
                 {
+                    name: 'git',
+                    alias: 'g',
+                    description: 'link to a git repo you want to add.',
+                },
+                {
                     name: 'repo',
                     alias: 'r',
                     description: 'Considers the folder as a repository for skem blueprints, and loops through he sub folders.'
