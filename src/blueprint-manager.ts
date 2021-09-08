@@ -5,7 +5,7 @@ import colors from 'colors';
 import { SkemOptions } from './command-line-args';
 import { UserInterface } from './user-interface';
 import { SkemConfigWrappers, SkemHooks } from './skem-config-manager';
-import { SkemConfigVariableTransform } from './variable-transformer';
+import { SkemConfigVariableTransform, SkemConfigVariableTransformWithDependencies } from './variable-transformer';
 
 const localDBFile = path.resolve(__dirname, '../db/db.json');
 
@@ -18,7 +18,7 @@ export interface SkemVariables {
     fileVariables: Record<string, string[]>;
 }
 
-export interface SkemBlueprint extends SkemConfigWrappers, SkemHooks, SkemConfigVariableTransform {
+export interface SkemBlueprint extends SkemConfigWrappers, SkemHooks, SkemConfigVariableTransformWithDependencies {
     isFile: boolean;
     root: string;
     name: string;

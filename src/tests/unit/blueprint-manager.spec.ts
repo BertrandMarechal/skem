@@ -445,6 +445,7 @@ describe('blueprint-manager', function () {
                         variablesInFiles: []
                     },
                     hooks: [],
+                    variableTransform: {}
                 }
             );
 
@@ -461,6 +462,7 @@ describe('blueprint-manager', function () {
                         variablesInFiles: []
                     },
                     hooks: [],
+                    variableTransform: {}
                 }
             }));
         });

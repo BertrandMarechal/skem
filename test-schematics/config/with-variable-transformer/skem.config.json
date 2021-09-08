@@ -1,0 +1,8 @@
+{
+  "variableTransform": {
+    "fileNameCamelCase": {
+      "transform": "camelCase(file-name)",
+      "skipIfDefined": true
+    }
+  }
+}

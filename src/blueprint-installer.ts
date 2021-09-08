@@ -49,27 +49,14 @@ export class BlueprintInstaller {
                 }
             }
 
-            const variablesTransform: Record<string, VariableTransformParamsWithDependencies> = {};
-
-            const variablesResolved: Record<string, string | null> = VariableManager.resolveVariables(
+            const variablesTransform: Record<string, VariableTransformParamsWithDependencies> = skemConfig.variableTransform;
+            const variables = await VariableManager.resolveVariables(
                 skemConfig.variables,
                 this.variableManager.parseOptionsVariables(optionsVariables),
                 originalFiles,
                 selectedFiles,
                 variablesTransform,
             );
-            const variables: Record<string, string> = {};
-
-            for (const key of Object.keys(variablesResolved)) {
-                if (variablesResolved[key]) {
-                    variables[key] = variablesResolved[key] as string;
-                    if (variablesTransform[key] && !variablesTransform[key].skipIfDefined) {
-                        variables[key] = await UserInterface.chooseValidVariable(key, variablesResolved[key]);
-                    }
-                } else if (!variables[key]) {
-                    variables[key] = await UserInterface.chooseValidVariable(key);
-                }
-            }
 
             if (skemConfig.isFile) {
                 const fileName = Path.basename(skemConfig.root);

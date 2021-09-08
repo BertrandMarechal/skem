@@ -10,6 +10,10 @@ export interface SkemConfigVariableTransform {
     variableTransform?: Record<string, VariableTransformParams>;
 }
 
+export interface SkemConfigVariableTransformWithDependencies {
+    variableTransform: Record<string, VariableTransformParamsWithDependencies>;
+}
+
 const variableModifiers = [
     'camelCase',
     'pascalCase',
@@ -28,8 +32,8 @@ const variableModifiers = [
 export class VariableTransformer {
     static transform(
         variableName: string,
-        transformParams: Record<string, VariableTransformParams>,
-        variables: Record<string, string>
+        transformParams: Record<string, VariableTransformParamsWithDependencies>,
+        variables: Record<string, string | null>
     ): string {
         if (transformParams[variableName]) {
             let carryOn = true;
@@ -42,7 +46,7 @@ export class VariableTransformer {
                             let values = value.split(',');
                             values = values.map(v => {
                                 if (variables[v]) {
-                                    return variables[v];
+                                    return variables[v] || '';
                                 }
                                 return v.replace(/['"]/g, '');
                             });
@@ -53,7 +57,7 @@ export class VariableTransformer {
             }
             return currentTransform;
         }
-        return variables[variableName];
+        return variables[variableName] as string;
     }
 
     static getRelatedVariables(transform: string): string[] {
@@ -130,6 +134,10 @@ export class VariableTransformer {
             }
         }
         return false;
+    }
+
+    static canBeSolved(variableName: string, variableTransform: Record<string, VariableTransformParamsWithDependencies>, variables: Record<string, string | null>): boolean {
+        return !variableTransform[variableName].dependencies.some(d => !variables[d]);
     }
 }
 

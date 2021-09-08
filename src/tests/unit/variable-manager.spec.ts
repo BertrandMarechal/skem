@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 
 import { VariableManager } from '../../variable-manager';
 import fs from 'fs';
+import { UserInterface } from '../../user-interface';
 
 jest.mock('fs');
 
@@ -56,11 +57,13 @@ describe('variable-manager', function () {
             );
             expect(Object.keys(result).length).toEqual(0);
         });
-        it('should filter the needed variables on the selected files only', function () {
-            const result = VariableManager.resolveVariables(
+        it('should filter the needed variables on the selected files only', async function () {
+            const chooseValidVariableSpy = jest.spyOn(UserInterface, 'chooseValidVariable')
+                .mockImplementationOnce(async () => 'value');
+            const result = await VariableManager.resolveVariables(
                 {
                     variables: ['var1', 'var2', 'var3'],
-                    fileVariables:{
+                    fileVariables: {
                         1: ['var2']
                     },
                     variablesInFiles: [],
@@ -70,14 +73,18 @@ describe('variable-manager', function () {
                 ['file2'],
                 {}
             );
+            expect(chooseValidVariableSpy).toHaveBeenCalledTimes(1);
             expect(Object.keys(result).length).toEqual(1);
-            expect(result).toEqual({ var2: null });
+            expect(result).toEqual({ var2: 'value' });
+            chooseValidVariableSpy.mockReset();
         });
-        it('should add to the variables to get the variables that are listed as dependencies', function () {
-            const result = VariableManager.resolveVariables(
+        it('should add to the variables to get the variables that are listed as dependencies', async function () {
+            const chooseValidVariableSpy = jest.spyOn(UserInterface, 'chooseValidVariable')
+                .mockImplementation(async () => 'value');
+            const result = await VariableManager.resolveVariables(
                 {
                     variables: ['var1', 'var2', 'var3'],
-                    fileVariables:{
+                    fileVariables: {
                         1: ['var3']
                     },
                     variablesInFiles: [],
@@ -93,18 +100,22 @@ describe('variable-manager', function () {
                 }
             );
             expect(Object.keys(result).length).toEqual(2);
-            expect(result).toEqual({ var2: null, var3: null });
+            expect(result).toEqual({ var2: 'value', var3: 'value' });
+            expect(chooseValidVariableSpy).toHaveBeenCalledTimes(2);
+            chooseValidVariableSpy.mockReset();
         });
-        it('should default the values correctly if provided', function () {
-            const result = VariableManager.resolveVariables(
+        it('should default the values correctly if provided', async function () {
+            const chooseValidVariableSpy = jest.spyOn(UserInterface, 'chooseValidVariable')
+                .mockImplementation(async () => 'value');
+            const result = await VariableManager.resolveVariables(
                 {
                     variables: ['var1', 'var2', 'var3'],
-                    fileVariables:{
+                    fileVariables: {
                         1: ['var3']
                     },
                     variablesInFiles: [],
                 },
-                { var2: 'var2Value'},
+                { var2: 'var2Value' },
                 ['file1', 'file2'],
                 ['file2'],
                 {
@@ -115,7 +126,9 @@ describe('variable-manager', function () {
                 }
             );
             expect(Object.keys(result).length).toEqual(2);
-            expect(result).toEqual({ var2: 'var2Value', var3: null });
+            expect(result).toEqual({ var2: 'var2Value', var3: 'value' });
+            expect(chooseValidVariableSpy).toHaveBeenCalledTimes(1);
+            chooseValidVariableSpy.mockReset();
         });
     });
     describe('replaceVariableInFileName', () => {

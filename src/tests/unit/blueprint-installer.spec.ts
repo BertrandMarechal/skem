@@ -26,6 +26,7 @@ const defaultConfig: SkemBlueprint = {
     name: 'config',
     files: [],
     hooks: [],
+    variableTransform: {},
     variables: {
         variables: ['var1'],
         fileVariables: { 0: ['var1'] },

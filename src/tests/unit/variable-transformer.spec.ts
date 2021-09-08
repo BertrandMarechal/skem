@@ -17,6 +17,7 @@ describe.only('variable-transformer', function () {
                         var: {
                             transform: 'camelCase(otherVar)',
                             skipIfDefined: true,
+                            dependencies: ['otherVar'],
                         }
                     },
                     { var: 'value', otherVar: 'other-value' }
@@ -29,6 +30,7 @@ describe.only('variable-transformer', function () {
                         var: {
                             transform: 'join(\'@\',upperSnakeCase(otherVar),replace(kebabCase(concat(andAnotherVar,\'able\')),\'val\',\'amazing-val\'))',
                             skipIfDefined: true,
+                            dependencies: ['otherVar', 'andAnotherVar']
                         }
                     },
                     { var: 'value', otherVar: 'other-value', andAnotherVar: 'AndAnotherValue' }

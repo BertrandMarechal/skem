@@ -103,7 +103,7 @@ export class Skem {
                     isFile: !isDirectory,
                     name: configName,
                     root,
-                    files: isDirectory ? files.map(f => f.replace(root, '')) : [root],
+                    files: isDirectory ? files.map(f => f.replace(`${root}\\`, '')) : [root],
                     variables: {
                         ...variables,
                         variablesInFiles: variables.variablesInFiles.map((item) => {

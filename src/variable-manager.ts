@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { SkemVariables } from './blueprint-manager';
 import { SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
-import { VariableTransformParamsWithDependencies } from './variable-transformer';
+import { VariableTransformer, VariableTransformParamsWithDependencies } from './variable-transformer';
+import { UserInterface } from './user-interface';
 
 export class VariableManager {
     parseOptionsVariables(optionVariables: string[]): Record<string, string> {
@@ -25,13 +26,13 @@ export class VariableManager {
         return variables;
     }
 
-    static resolveVariables(
+    static async resolveVariables(
         configVariables: SkemVariables,
         variables: Record<string, string>,
         originalFiles: string[],
         selectedFiles: string[],
         variableTransform: Record<string, VariableTransformParamsWithDependencies>
-    ): Record<string, string | null> {
+    ): Promise<Record<string, string>> {
         const newVariables: Record<string, string | null> = {...variables};
         const variablesInSelectedFiles = originalFiles.reduce((agg: string[], file, i) => {
             if (selectedFiles.some(f => f === file)) {
@@ -66,7 +67,41 @@ export class VariableManager {
         for (const unresolvedVariableDependency of unresolvedVariableDependencies) {
             newVariables[unresolvedVariableDependency] = null;
         }
-        return newVariables;
+        return VariableManager.resolveMissingVariables(newVariables, variableTransform);
+    }
+
+    static async resolveMissingVariables(
+        variables: Record<string, string | null>,
+        variableTransform: Record<string, VariableTransformParamsWithDependencies>
+    ): Promise<Record<string, string>> {
+        const newVariables = { ...variables };
+        const variableNames = Object.keys(newVariables);
+
+        const variablesWithoutDependencies = variableNames.filter(name =>
+            !variableTransform[name] || variableTransform[name].dependencies.length === 0
+        );
+        for (const variableWithoutDependencies of variablesWithoutDependencies) {
+            if (!newVariables[variableWithoutDependencies]) {
+                newVariables[variableWithoutDependencies] = await UserInterface.chooseValidVariable(variableWithoutDependencies);
+            }
+        }
+
+        while (variableNames.some(name => !newVariables[name])) {
+            for (const name of variableNames) {
+                if (!newVariables[name]) {
+                    if (VariableTransformer.canBeSolved(name, variableTransform, newVariables)) {
+                        newVariables[name] = VariableTransformer.transform(name, variableTransform, newVariables);
+                    }
+                }
+            }
+        }
+
+        for (const key of variableNames) {
+            if (variableTransform[key] && !variableTransform[key].skipIfDefined) {
+                newVariables[key] = await UserInterface.chooseValidVariable(key, newVariables[key]);
+            }
+        }
+        return newVariables as Record<string, string>;
     }
 
     static replaceVariableInFileName(
