@@ -578,8 +578,6 @@ describe('skem', function () {
             const skem = new Skem();
             const createFolderIfNotExistsSyncSpy = jest.spyOn(FileManager, 'createFolderIfNotExistsSync')
                 .mockImplementationOnce(jest.fn());
-            const deleteTempFolderSpy = jest.spyOn(FileManager, 'deleteTempFolder')
-                .mockImplementationOnce(jest.fn());
             const execSyncSpy = jest.spyOn(mockChildProcess, 'execSync')
                 .mockImplementationOnce(jest.fn());
             const extractConfigFromProjectSpy = jest.spyOn(skem, 'extractConfigFromProject')
@@ -587,17 +585,16 @@ describe('skem', function () {
 
             await skem.addFromGit({ git: 'https://git.com' });
 
-            expect(createFolderIfNotExistsSyncSpy).toHaveBeenCalledWith('./temp');
+            expect(createFolderIfNotExistsSyncSpy).toHaveBeenCalledWith('./git-repos');
             expect(execSyncSpy).toHaveBeenCalledWith(
-                'git clone https://git.com ./temp/uuid',
+                'git clone https://git.com ./git-repos/uuid',
                 { stdio: [0, 1, 2] }
             );
             expect(extractConfigFromProjectSpy).toHaveBeenCalledWith({
                 git: 'https://git.com',
-                path: './temp/uuid',
-                name: ''
+                path: './git-repos/uuid',
+                name: '',
             });
-            expect(deleteTempFolderSpy).toHaveBeenCalledWith('uuid');
         });
     });
 });

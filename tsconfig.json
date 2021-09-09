@@ -67,6 +67,7 @@
     "schematics",
     "temp",
     "coverage",
+    "git-repos",
     "test-schematics",
     "src/tests"
   ]

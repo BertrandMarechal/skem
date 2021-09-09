@@ -4,6 +4,7 @@
 /tests/**/*.js
 /src/**/*.js
 /dist/
+/git-repos/
 /.idea/
 /db/
 /coverage/

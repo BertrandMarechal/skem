@@ -4,7 +4,6 @@ import child_process from 'child_process';
 import {
     SkemConfigVariableTransform,
     VariableTransformer,
-    VariableTransformParams,
     VariableTransformParamsWithDependencies
 } from './variable-transformer';
 

@@ -31,8 +31,12 @@ export class Skem {
             path,
             name,
             isUpdate,
+            git,
             folderNameFromLoop
-        }: Pick<SkemOptions, 'path' | 'name'> & { isUpdate?: boolean, folderNameFromLoop?: string },
+        }: Pick<SkemOptions, 'path' | 'name' | 'git'> & {
+            isUpdate?: boolean,
+            folderNameFromLoop?: string
+        },
         skemConfigManager?: SkemConfigManager
     ): Promise<void> {
         let configName: string = name || '';
@@ -41,7 +45,18 @@ export class Skem {
         let skemWrappers: SkemConfigWrappers = {};
         let skemHooks: SkemHook[] = [];
         let skemVariableTransform: Record<string, VariableTransformParamsWithDependencies> = {};
+        let isGit = !!git;
+        let gitUrl = git;
         const addOrUpdate = isUpdate ? 'Updat' : 'Add';
+        const configs = this.blueprintManager.config;
+        const existingConfig = configs[configName];
+
+        if (existingConfig?.gitUrl) {
+            isGit = true;
+            gitUrl = existingConfig.gitUrl;
+            console.log(existingConfig?.gitUrl);
+            Skem.gitPullFF(existingConfig.root);
+        }
 
         if (isDirectory) {
             if (FileManager.exists(Path.resolve(path, CONFIGURATION_FILE_NAME))) {
@@ -89,11 +104,8 @@ export class Skem {
                 configName = await UserInterface.chooseValidNameForBlueprint();
             }
         }
-        if (!isUpdate) {
-            const configs = this.blueprintManager.config;
-            if (configs[configName]) {
-                await UserInterface.confirmOverwriteOfBlueprintOrExit(configName);
-            }
+        if (!isUpdate && configs[configName]) {
+            await UserInterface.confirmOverwriteOfBlueprintOrExit(configName);
         }
         console.log(`    ${addOrUpdate}ing ${colors.cyan(configName)}`);
         const root = Path.resolve(path);
@@ -115,7 +127,8 @@ export class Skem {
                     },
                     ...skemWrappers,
                     variableTransform: skemVariableTransform,
-                    hooks: skemHooks
+                    hooks: skemHooks,
+                    ...(isGit ? { gitUrl } : null)
                 }
             );
             console.log(`    ${addOrUpdate}ed ${colors.cyan(configName)}`);
@@ -187,17 +200,33 @@ export class Skem {
 
     async addFromGit(options: Pick<SkemOptions, 'git'>): Promise<void> {
         const folderName = v4();
-        FileManager.createFolderIfNotExistsSync('./temp');
+        if (options.git) {
+            FileManager.createFolderIfNotExistsSync('./git-repos');
+            Skem.cloneRepo(options.git, folderName);
+    
+            await this.extractConfigFromProject({
+                name: '',
+                ...options,
+                path: `./git-repos/${folderName}`,
+            });
+        }
+    }
+    
+    private static cloneRepo(url: string, folderName: string) {
         child_process.execSync(
-            `git clone ${options.git} ./temp/${folderName}`,
+            `git clone ${url} ./git-repos/${folderName}`,
             { stdio: [0, 1, 2] }
         );
-
-        await this.extractConfigFromProject({
-            name: '',
-            ...options,
-            path: `./temp/${folderName}`,
-        });
-        FileManager.deleteTempFolder(folderName);
+    }
+    
+    private static gitPullFF(path: string) {
+        console.log('Pulling latest from git');
+        child_process.execSync(
+            'git pull --ff',
+            {
+                stdio: [0, 1, 2],
+                cwd: path
+            }
+        );
     }
 }

@@ -24,6 +24,7 @@ export interface SkemBlueprint extends SkemConfigWrappers, SkemHooks, SkemConfig
     name: string;
     files: string[];
     variables: SkemVariables;
+    gitUrl?: string;
 }
 
 export class BlueprintManager {
