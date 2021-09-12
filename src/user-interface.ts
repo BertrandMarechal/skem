@@ -1,5 +1,6 @@
 import inquirer from 'inquirer';
 import colors from 'colors';
+import { VariableManager } from './variable-manager';
 
 export class UserInterface {
     static async selectBlueprint(configNames: string[]): Promise<string> {
@@ -27,13 +28,18 @@ export class UserInterface {
 
     static async chooseValidNameForBlueprint(): Promise<string> {
         let configName = '';
-        while (!configName) {
+        let validConfigName = false;
+        while (!validConfigName) {
             const { desiredName } = await inquirer.prompt({
                 name: 'desiredName',
                 type: 'input',
                 message: 'Please choose a name for this blueprint:'
             });
             configName = desiredName;
+            validConfigName = !!configName;
+            if (validConfigName) {
+                validConfigName = VariableManager.validateName(configName, false);
+            }
         }
         return configName;
     }
@@ -59,13 +65,25 @@ export class UserInterface {
     }
 
     static async overwriteFolderNameForBlueprint(configName: string): Promise<string> {
-        const { desiredName } = await inquirer.prompt({
-            name: 'desiredName',
-            type: 'input',
-            message: `Please choose a name for this blueprint (press enter for "${configName}")`
-        });
-        if (desiredName) {
-            return desiredName;
+
+        let validConfigName = false;
+        while (!validConfigName) {
+            const { desiredName } = await inquirer.prompt({
+                name: 'desiredName',
+                type: 'input',
+                message: `Please choose a name for this blueprint (press enter for "${configName}")`
+            });
+            if (!desiredName) {
+                return configName;
+            }
+
+            validConfigName = !!desiredName;
+            if (validConfigName) {
+                validConfigName = VariableManager.validateName(desiredName, false);
+                if (validConfigName) {
+                    return desiredName;
+                }
+            }
         }
         return configName;
     }

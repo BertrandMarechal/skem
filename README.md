@@ -1,3 +1,4 @@
+
 # Skem
 
 Your blueprints manager.
@@ -9,8 +10,6 @@ similar. It helps in:
 
 - Holding a local record of blueprints you created or added to your library
 - Installing those blueprints on demand
-
-
 
 ## Installation
 
@@ -49,6 +48,8 @@ Use the `--name` (or `-n`) option to provide the name you want to give to your b
 If none is provided, the CLI will prompt a message for you to provide the name.
 
 Use the `--repo` (or `-r`) option to add all the sub folder of a folder as individual blueprints.
+
+Use the `--git` (or `-g`) option to pull a git repository and add its blueprint(s) to the local library.
 
 ### Install
 
@@ -137,13 +138,32 @@ by their extensions. This helps with trying to keep a valid syntax whilst workin
 The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
 - `hooks`: {command: string, type?: pre-install | post-install, path?: string}[] Array defining the extra steps to run
 before or after the installation of the blueprint (i.e. `npm i`, `yarn i`).
+- `variableTransform`: {[variableName: string]: { transform: string, skipIfDefined?: boolean }} Object defining the
+variables that can be figuredOut through other variables.
+  - Set `skipIfDefined` to true if you want to skip being prompted the variable value on installing the blueprint
+  - The transform property is to be composed of other variable with transform functions. The available functions are:
+    - `camelCase(value)` Transforms the parameter to camelCase.
+    - `pascalCase(value)` Transforms the parameter to PascalCase.
+    - `snakeCase(value)` Transforms the parameter to snake_case.
+    - `upperSnakeCase(value)` Transforms the parameter to UPPER_SNAKE_CASE.
+    - `kebabCase(value)` Transforms the parameter to kebab-case.
+    - `spaceCase(value)` Transforms the parameter to space case
+    - `upperCase(value)` Sets all characters to upper case
+    - `lowerCase(value)` Sets all characters to lower case
+    - `replace(value, replace, replaceWith, options?)` Replaces the in the `value` the `replace` string with
+    `replaceWith`. The options are a string that tell the Regular expression how to behave (i.e. `ig` for insensitive
+    and global)
+    - `concat(...values)` Concatenates all the values passed as parameter (i.e. `concat('val1','val2')` outputs
+    `val1val2`)
+    - `join(separator, ...values)` Joins all the values passed as parameter with the separator (i.e.
+    `join('-','val1','val2')` outputs `val1-val2`)
+    - `splitPart(value, separator, nth)` Splits the `value` using the `separator`, and takes the `nth` part. `nth`
+    starts at 0 
 
 ### Examples
 
-You can check the [schematics](./schematics) folder for examples about how to use the config files. 
+You can check the [test-schematics](./test-schematics) folder for examples about how to use the config files. 
 
-## Todos
+## Ideas
 
-- [ ] Variable transformation
-- [ ] Filter variables based on picked files for installation
-- [ ] Pull from Git link
+- [ ] Remove the temp git folders from the local location

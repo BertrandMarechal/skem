@@ -156,7 +156,7 @@ export class VariableManager {
                     }, []);
                 const currentFileUniqueVariables: string[] = [];
                 for (const variable of matchedVariables) {
-                    VariableManager.validateName(variable);
+                    VariableManager.validateName(variable, true);
                     if (!currentFileUniqueVariables.some(v => v === variable)) {
                         currentFileUniqueVariables.push(variable);
                     }
@@ -175,25 +175,33 @@ export class VariableManager {
         };
     }
 
-    static validateName(variableName: string): boolean {
+    static validateName(variableName: string, exit = true): boolean {
         if (variableName.length < 2) {
             console.log(`Name "${variableName}" should be at least 2 characters long.`);
-            process.exit(1);
+            if (exit) {
+                process.exit(1);
+            }
             return false;
         }
         if (!/^[a-z0-9_-]+$/i.test(variableName)) {
             console.log(`Invalid character in name "${variableName}". Please use only alphanumerical characters, and "-" or "_".`);
-            process.exit(1);
+            if (exit) {
+                process.exit(1);
+            }
             return false;
         }
         if (!/^[a-z]/i.test(variableName)) {
             console.log(`Name "${variableName}" should start with a letter.`);
-            process.exit(1);
+            if (exit) {
+                process.exit(1);
+            }
             return false;
         }
         if (/[_-]$/i.test(variableName)) {
             console.log(`Name "${variableName}" not end with "-" or "_".`);
-            process.exit(1);
+            if (exit) {
+                process.exit(1);
+            }
             return false;
         }
         return true;
