@@ -48,7 +48,6 @@ describe('variable-manager', function () {
                 {
                     variables: [],
                     fileVariables:{},
-                    variablesInFiles: [],
                 },
                 {},
                 [],
@@ -66,7 +65,6 @@ describe('variable-manager', function () {
                     fileVariables: {
                         1: ['var2']
                     },
-                    variablesInFiles: [],
                 },
                 {},
                 ['file1', 'file2'],
@@ -87,7 +85,6 @@ describe('variable-manager', function () {
                     fileVariables: {
                         1: ['var3']
                     },
-                    variablesInFiles: [],
                 },
                 {},
                 ['file1', 'file2'],
@@ -113,7 +110,6 @@ describe('variable-manager', function () {
                     fileVariables: {
                         1: ['var3']
                     },
-                    variablesInFiles: [],
                 },
                 { var2: 'var2Value' },
                 ['file1', 'file2'],

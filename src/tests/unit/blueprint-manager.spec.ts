@@ -442,7 +442,6 @@ describe('blueprint-manager', function () {
                     variables: {
                         variables: [],
                         fileVariables: {},
-                        variablesInFiles: []
                     },
                     hooks: [],
                     variableTransform: {}
@@ -459,7 +458,6 @@ describe('blueprint-manager', function () {
                     variables: {
                         variables: [],
                         fileVariables: {},
-                        variablesInFiles: []
                     },
                     hooks: [],
                     variableTransform: {}

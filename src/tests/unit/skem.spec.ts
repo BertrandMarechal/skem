@@ -109,10 +109,6 @@ describe('skem', function () {
                         .mockImplementationOnce(() => ['file.ts']);
                     const variables: SkemVariables = {
                         variables: ['v1', 'v2'],
-                        variablesInFiles: [
-                            { file: Path.resolve('file.ts'), name: 'v1' },
-                            { file: Path.resolve('file.ts'), name: 'v2' },
-                        ],
                         fileVariables: {}
                     };
                     const getVariablesSpy = jest.spyOn(VariableManager, 'getVariables')
@@ -133,13 +129,7 @@ describe('skem', function () {
                         name: 'configName',
                         root: Path.resolve('file.ts'),
                         files: [Path.resolve('file.ts')],
-                        variables: {
-                            ...variables,
-                            variablesInFiles: [
-                                { file: '', name: 'v1' },
-                                { file: '', name: 'v2' },
-                            ],
-                        },
+                        variables,
                         hooks: [],
                         variableTransform: {},
                     });
@@ -157,10 +147,6 @@ describe('skem', function () {
                         .mockImplementationOnce(() => ['file.ts']);
                     const variables: SkemVariables = {
                         variables: ['v1', 'v2'],
-                        variablesInFiles: [
-                            { file: Path.resolve('file.ts'), name: 'v1' },
-                            { file: Path.resolve('file.ts'), name: 'v2' },
-                        ],
                         fileVariables: {}
                     };
                     const getVariablesSpy = jest.spyOn(VariableManager, 'getVariables')
@@ -180,13 +166,7 @@ describe('skem', function () {
                         name: 'configName',
                         root: Path.resolve('file.ts'),
                         files: [Path.resolve('file.ts')],
-                        variables: {
-                            ...variables,
-                            variablesInFiles: [
-                                { file: '', name: 'v1' },
-                                { file: '', name: 'v2' },
-                            ],
-                        },
+                        variables,
                         hooks: [],
                         variableTransform: {},
                     });
@@ -204,10 +184,6 @@ describe('skem', function () {
                         .mockImplementationOnce(() => ['file.ts']);
                     const variables: SkemVariables = {
                         variables: ['v1', 'v2'],
-                        variablesInFiles: [
-                            { file: Path.resolve('file.ts'), name: 'v1' },
-                            { file: Path.resolve('file.ts'), name: 'v2' },
-                        ],
                         fileVariables: {}
                     };
                     const getVariablesSpy = jest.spyOn(VariableManager, 'getVariables')
@@ -227,13 +203,7 @@ describe('skem', function () {
                         name: 'configName',
                         root: Path.resolve('file.ts'),
                         files: [Path.resolve('file.ts')],
-                        variables: {
-                            ...variables,
-                            variablesInFiles: [
-                                { file: '', name: 'v1' },
-                                { file: '', name: 'v2' },
-                            ],
-                        },
+                        variables,
                         hooks: [],
                         variableTransform: {},
                     });
@@ -254,10 +224,6 @@ describe('skem', function () {
                         .mockImplementationOnce(() => ['file.ts']);
                     const variables: SkemVariables = {
                         variables: ['v1', 'v2'],
-                        variablesInFiles: [
-                            { file: Path.resolve('file.ts'), name: 'v1' },
-                            { file: Path.resolve('file.ts'), name: 'v2' },
-                        ],
                         fileVariables: {}
                     };
                     const getVariablesSpy = jest.spyOn(VariableManager, 'getVariables')
@@ -290,15 +256,11 @@ describe('skem', function () {
                         .mockReturnValueOnce({});
                     const getFileListSpy = jest.spyOn(FileManager, 'getFileList')
                         .mockImplementationOnce(() => [
-                            'file1.ts',
-                            'file2.ts',
+                            Path.resolve('path', 'file1.ts'),
+                            Path.resolve('path', 'file2.ts'),
                         ]);
                     const variables: SkemVariables = {
                         variables: ['v1', 'v2'],
-                        variablesInFiles: [
-                            { file: Path.resolve('path', 'file1.ts'), name: 'v1' },
-                            { file: Path.resolve('path', 'file2.ts'), name: 'v2' },
-                        ],
                         fileVariables: {}
                     };
                     const getVariablesSpy = jest.spyOn(VariableManager, 'getVariables')
@@ -323,13 +285,7 @@ describe('skem', function () {
                             'file1.ts',
                             'file2.ts',
                         ],
-                        variables: {
-                            ...variables,
-                            variablesInFiles: [
-                                { file: '\\file1.ts', name: 'v1' },
-                                { file: '\\file2.ts', name: 'v2' },
-                            ],
-                        },
+                        variables,
                         hooks: [],
                         variableTransform: {},
                     });
@@ -352,10 +308,6 @@ describe('skem', function () {
                         .mockImplementationOnce(() => ['file.ts']);
                     const variables: SkemVariables = {
                         variables: ['v1', 'v2'],
-                        variablesInFiles: [
-                            { file: Path.resolve('file.ts'), name: 'v1' },
-                            { file: Path.resolve('file.ts'), name: 'v2' },
-                        ],
                         fileVariables: {}
                     };
                     const getVariablesSpy = jest.spyOn(VariableManager, 'getVariables')
@@ -376,13 +328,7 @@ describe('skem', function () {
                         name: 'configName',
                         root: Path.resolve('file.ts'),
                         files: [Path.resolve('file.ts')],
-                        variables: {
-                            ...variables,
-                            variablesInFiles: [
-                                { file: '', name: 'v1' },
-                                { file: '', name: 'v2' },
-                            ],
-                        },
+                        variables,
                         ...defaultWrappers,
                         hooks: [],
                         variableTransform: {},

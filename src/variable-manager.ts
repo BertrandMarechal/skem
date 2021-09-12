@@ -3,6 +3,7 @@ import { SkemVariables } from './blueprint-manager';
 import { SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
 import { VariableTransformer, VariableTransformParamsWithDependencies } from './variable-transformer';
 import { UserInterface } from './user-interface';
+import { FileManager } from './file-manager';
 
 export class VariableManager {
     parseOptionsVariables(optionVariables: string[]): Record<string, string> {
@@ -135,7 +136,6 @@ export class VariableManager {
     }
 
     static getVariables(fileList: string[], skemWrappers: SkemConfigWrappers): SkemVariables {
-        const variablesInFiles: { file: string, name: string }[] = [];
         const variables: string[] = [];
         const fileVariables: Record<number, string[]> = {};
         const [fileNameStartWrapper, fileNameEndWrapper] = this.translateWrappersToRegExpString(SkemConfigManager.getFileNameVariableWrapper(skemWrappers));
@@ -160,7 +160,6 @@ export class VariableManager {
                     if (!currentFileUniqueVariables.some(v => v === variable)) {
                         currentFileUniqueVariables.push(variable);
                     }
-                    variablesInFiles.push({ file: fileName, name: variable });
                     if (!variables.some(v => v === variable)) {
                         variables.push(variable);
                     }
@@ -170,7 +169,6 @@ export class VariableManager {
         }
         return {
             variables,
-            variablesInFiles,
             fileVariables
         };
     }

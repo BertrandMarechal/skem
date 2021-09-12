@@ -1,7 +1,7 @@
 import { SkemOptions } from '../../command-line-args';
 import { jest } from '@jest/globals';
 import { BlueprintInstaller } from '../../blueprint-installer';
-import { SkemConfig, SkemConfigManager, SkemHook } from '../../skem-config-manager';
+import { SkemConfigManager, SkemHook } from '../../skem-config-manager';
 import { SkemBlueprint } from '../../blueprint-manager';
 import { VariableManager } from '../../variable-manager';
 import { FileManager } from '../../file-manager';
@@ -30,9 +30,6 @@ const defaultConfig: SkemBlueprint = {
     variables: {
         variables: ['var1'],
         fileVariables: { 0: ['var1'] },
-        variablesInFiles: [
-            { file: 'file1', name: 'var1' },
-        ],
     },
     isFile: false,
     root: 'root',

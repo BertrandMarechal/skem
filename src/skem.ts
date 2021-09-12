@@ -54,7 +54,6 @@ export class Skem {
         if (existingConfig?.gitUrl) {
             isGit = true;
             gitUrl = existingConfig.gitUrl;
-            console.log(existingConfig?.gitUrl);
             Skem.gitPullFF(existingConfig.root);
         }
 
@@ -117,14 +116,8 @@ export class Skem {
                     isFile: !isDirectory,
                     name: configName,
                     root,
-                    files: isDirectory ? files.map(f => f.replace(`${root}\\`, '')) : [root],
-                    variables: {
-                        ...variables,
-                        variablesInFiles: variables.variablesInFiles.map((item) => {
-                            item.file = item.file.replace(root, '');
-                            return item;
-                        }),
-                    },
+                    files: isDirectory ? files.map(f => Path.relative(root, f)) : [root],
+                    variables,
                     ...skemWrappers,
                     variableTransform: skemVariableTransform,
                     hooks: skemHooks,

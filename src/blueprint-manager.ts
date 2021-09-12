@@ -5,16 +5,12 @@ import colors from 'colors';
 import { SkemOptions } from './command-line-args';
 import { UserInterface } from './user-interface';
 import { SkemConfigWrappers, SkemHooks } from './skem-config-manager';
-import { SkemConfigVariableTransform, SkemConfigVariableTransformWithDependencies } from './variable-transformer';
+import { SkemConfigVariableTransformWithDependencies } from './variable-transformer';
 
 const localDBFile = path.resolve(__dirname, '../db/db.json');
 
 export interface SkemVariables {
     variables: string[];
-    variablesInFiles: {
-        file: string;
-        name: string;
-    }[];
     fileVariables: Record<string, string[]>;
 }
 

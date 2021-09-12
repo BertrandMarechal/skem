@@ -46,11 +46,8 @@ export class FileManager {
             .filter(fileName => {
                 const realFileName = Path.resolve(path, fileName);
                 for (const { root, gitignore } of gitIgnores) {
-                    const denied = (gitignore as { denies: (name: string) => boolean }).denies(
-                        realFileName
-                            .replace(root + '\\', '')
-                            .replace(/\\/g, '/')
-                    );
+                    const denied = (gitignore as { denies: (name: string) => boolean })
+                        .denies(Path.relative(root, realFileName));
                     if (denied) {
                         return false;
                     }
@@ -96,10 +93,7 @@ export class FileManager {
     }
 
     static createFolderStructureIfNeeded(path: string, depth = 0): void {
-        const splitPath = path
-            .replace(/\\/g, '/')
-            .replace(/\/\//g, '/')
-            .split('/');
+        const splitPath = path.split(Path.sep);
         if (depth === splitPath.length - 1) {
             return;
         } else {
@@ -111,6 +105,5 @@ export class FileManager {
     static deleteTempFolder(folderName: string): void {
         fs.rmdirSync(path.resolve(`./temp/${folderName}`), { recursive: true });
     }
-
 }
 

@@ -13,20 +13,16 @@ similar. It helps in:
 
 ## Installation
 
-As for now, Skem needs to be installed as follow :
+You can install Skem through your usual node package manager :
 
 - npm
 ```shell
-npm install
-npm build
-npm link
+npm install -g skem
 ```
 
 - yarn
 ```shell
-yarn install
-yarn build
-yarn link
+yarn global add skem
 ```
 
 ## CLI usage

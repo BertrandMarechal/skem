@@ -4,9 +4,11 @@
   "description": "Make your projects easier with schematics",
   "skem": "./dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "test": "jest"
+    "build": "./node_modules/.bin/tsc",
+    "test:unit": "jest unit",
+    "test:integration": "jest integration --runInBand"
   },
+  "repository": "https://github.com/BertrandMarechal/skem",
   "author": "eskay",
   "license": "ISC",
   "devDependencies": {
@@ -20,7 +22,8 @@
     "@typescript-eslint/parser": "^4.29.3",
     "eslint": "^7.32.0",
     "jest": "^27.0.6",
-    "ts-jest": "^27.0.5"
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.4.3"
   },
   "dependencies": {
     "@gerhobbelt/gitignore-parser": "^0.2.0-9",
