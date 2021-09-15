@@ -152,6 +152,7 @@ export class Skem {
                     path: this.blueprintManager.config[name].root,
                     isUpdate: true,
                 });
+                this.checkGitRepos();
                 return;
             }
         } else {
@@ -166,6 +167,7 @@ export class Skem {
                     name: schematic,
                     isUpdate: true,
                 });
+                this.checkGitRepos();
             }
         }
     }
@@ -185,6 +187,7 @@ export class Skem {
 
     async removeFromConfig({ name, force }: Pick<SkemOptions, 'name' | 'force'>): Promise<void> {
         await this.blueprintManager.removeFromConfig({ name, force });
+        this.checkGitRepos();
     }
 
     async printConfig({ name }: Pick<SkemOptions, 'name'>): Promise<void> {
@@ -221,5 +224,21 @@ export class Skem {
                 cwd: path
             }
         );
+    }
+
+    private checkGitRepos() {
+        const gitReposFolder = Path.resolve('./git-repos');
+        if (FileManager.exists(gitReposFolder)) {
+            const gitRepos = FileManager.getFolderList(gitReposFolder);
+            const reposToGetRidOf = gitRepos
+                .filter(gitRepo => !this.blueprintManager.configNames.some(name =>
+                    this.blueprintManager.config[name].root.indexOf(gitRepo) > -1
+                ));
+            if (reposToGetRidOf.length) {
+                for (const repoToGetRidOf of reposToGetRidOf) {
+                    FileManager.deleteFolder(repoToGetRidOf);
+                }
+            }
+        }
     }
 }

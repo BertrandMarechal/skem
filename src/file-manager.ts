@@ -29,6 +29,13 @@ export class FileManager {
         );
     }
 
+    static getFolderList(path: string): string[] {
+        const folders = fs.readdirSync(path);
+        return folders
+            .map(file => Path.resolve(path, file))
+            .filter(FileManager.isDirectory);
+    }
+
     static getFileList(path: string, parentGitIgnores: { gitignore: unknown, root: string }[] = []): string[] {
         const gitIgnores = [...parentGitIgnores];
         if (!FileManager.isDirectory(path)) {
@@ -46,7 +53,7 @@ export class FileManager {
             .filter(fileName => {
                 const realFileName = Path.resolve(path, fileName);
                 for (const { root, gitignore } of gitIgnores) {
-                    const denied = (gitignore as { denies: (name: string) => boolean })
+                    const denied = (gitignore as { denies: (_name: string) => boolean })
                         .denies(Path.relative(root, realFileName));
                     if (denied) {
                         return false;
@@ -104,6 +111,10 @@ export class FileManager {
 
     static deleteTempFolder(folderName: string): void {
         fs.rmdirSync(path.resolve(`./temp/${folderName}`), { recursive: true });
+    }
+
+    static deleteFolder(path: string): void {
+        fs.rmdirSync(path, { recursive: true });
     }
 }
 
