@@ -1,5 +1,6 @@
-
 # Skem
+___
+[![Unit and integration test](https://github.com/BertrandMarechal/skem/actions/workflows/github-test.yml/badge.svg)](https://github.com/BertrandMarechal/skem/actions/workflows/github-test.yml)
 
 Your blueprints manager.
 
