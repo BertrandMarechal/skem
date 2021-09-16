@@ -159,23 +159,23 @@ describe('skem-config-manager', function () {
     describe('skemWrappers', () => {
         it('should return the fileNameVariableWrapper if only this one was set', () => {
             jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({ fileNameVariableWrapper: '--' }));
+                .mockImplementationOnce(() => JSON.stringify({ fileNameVariableWrapper: '-variable-' }));
 
             const skemConfigManager = new SkemConfigManager('fileName');
             const skemWrappers = skemConfigManager.skemWrappers;
 
             expect(Object.keys(skemWrappers).length).toEqual(1);
-            expect(skemWrappers.fileNameVariableWrapper).toEqual('--');
+            expect(skemWrappers.fileNameVariableWrapper).toEqual('-variable-');
         });
         it('should return the variableWrapper if only this one was set', () => {
             jest.spyOn(mockFS, 'readFileSync')
-                .mockImplementationOnce(() => JSON.stringify({ variableWrapper: '--' }));
+                .mockImplementationOnce(() => JSON.stringify({ variableWrapper: '-variable-' }));
 
             const skemConfigManager = new SkemConfigManager('fileName');
             const skemWrappers = skemConfigManager.skemWrappers;
 
             expect(Object.keys(skemWrappers).length).toEqual(1);
-            expect(skemWrappers.variableWrapper).toEqual('--');
+            expect(skemWrappers.variableWrapper).toEqual('-variable-');
         });
         it('should return the variableWrappers if only this one was set', () => {
             jest.spyOn(mockFS, 'readFileSync')
@@ -190,8 +190,8 @@ describe('skem-config-manager', function () {
         it('should return all if all were set was set', () => {
             jest.spyOn(mockFS, 'readFileSync')
                 .mockImplementationOnce(() => JSON.stringify({
-                    fileNameVariableWrapper: '--',
-                    variableWrapper: '--',
+                    fileNameVariableWrapper: '-variable-',
+                    variableWrapper: '-variable-',
                     variableWrappers: []
                 }));
 
@@ -199,8 +199,8 @@ describe('skem-config-manager', function () {
             const skemWrappers = skemConfigManager.skemWrappers;
 
             expect(Object.keys(skemWrappers).length).toEqual(3);
-            expect(skemWrappers.fileNameVariableWrapper).toEqual('--');
-            expect(skemWrappers.variableWrapper).toEqual('--');
+            expect(skemWrappers.fileNameVariableWrapper).toEqual('-variable-');
+            expect(skemWrappers.variableWrapper).toEqual('-variable-');
             expect(skemWrappers.variableWrappers).toEqual([]);
         });
     });
@@ -245,7 +245,7 @@ describe('skem-config-manager', function () {
             expect(SkemConfigManager.getFileNameVariableWrapper({})).toEqual(['___', '___']);
         });
         it('should return the provided one if fileNameVariableWrapper provided', () => {
-            expect(SkemConfigManager.getFileNameVariableWrapper({ fileNameVariableWrapper: '{{{}}}' })).toEqual(['{{{', '}}}']);
+            expect(SkemConfigManager.getFileNameVariableWrapper({ fileNameVariableWrapper: '{{{variable}}}' })).toEqual(['{{{', '}}}']);
         });
     });
     describe('getVariableWrapper', () => {
@@ -253,18 +253,18 @@ describe('skem-config-manager', function () {
             expect(SkemConfigManager.getVariableWrapper('', {})).toEqual(['___', '___']);
         });
         it('should return the variableWrapper if no variableWrappers not provided', () => {
-            expect(SkemConfigManager.getVariableWrapper('', { variableWrapper: '{{{}}}' })).toEqual(['{{{', '}}}']);
+            expect(SkemConfigManager.getVariableWrapper('', { variableWrapper: '{{{variable}}}' })).toEqual(['{{{', '}}}']);
         });
         it('should return the variableWrapper if no variableWrappers match', () => {
             expect(SkemConfigManager.getVariableWrapper('js', {
-                variableWrapper: '{{{}}}',
-                variableWrappers: [{ wrapper: '<<<>>>', extension: 'json' }]
+                variableWrapper: '{{{variable}}}',
+                variableWrappers: [{ wrapper: '<<<variable>>>', extension: 'json' }]
             })).toEqual(['{{{', '}}}']);
         });
         it('should return the correct variableWrapper if it match', () => {
             expect(SkemConfigManager.getVariableWrapper('json', {
-                variableWrapper: '{{{}}}',
-                variableWrappers: [{ wrapper: '<<<>>>', extension: 'json' }]
+                variableWrapper: '{{{variable}}}',
+                variableWrappers: [{ wrapper: '<<<variable>>>', extension: 'json' }]
             })).toEqual(['<<<', '>>>']);
         });
     });
@@ -350,7 +350,7 @@ describe('skem-config-manager', function () {
             it('should not allow multiple variableWrappers with same extension', () => {
                 jest.spyOn(mockFS, 'readFileSync')
                     .mockImplementationOnce(() => JSON.stringify({
-                        variableWrappers: [{ extrnsion: 'js', wrapper: '----' }, { extrnsion: 'js', wrapper: '____' }],
+                        variableWrappers: [{ extrnsion: 'js', wrapper: '-variable-' }, { extrnsion: 'js', wrapper: '__variable__' }],
                     }));
                 const exitSpy = jest.spyOn(process, 'exit')
                     .mockImplementationOnce(jest.fn());

@@ -180,12 +180,12 @@ describe('variable-manager', function () {
                         '---captureMe---{{{butNotMe}}}'
                 );
             const { fileVariables, variables } = VariableManager.getVariables(
-                ['test.js', '___variable-name___.ts'],
+                ['test.js', '___variable-name>.ts'],
                 {
-                    variableWrapper: '------',
-                    fileNameVariableWrapper: '______',
+                    variableWrapper: '---variable---',
+                    fileNameVariableWrapper: '___variable>',
                     variableWrappers: [
-                        { wrapper: '{{{}}}', extension: 'js' }
+                        { wrapper: '{{{variable}}}', extension: 'js' }
                     ]
                 }
             );

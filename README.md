@@ -1,7 +1,7 @@
 
 # Skem
 
-Your blueprints manager.
+Your blueprint manager.
 
 ## Purpose
 
@@ -108,8 +108,8 @@ If no name is provided, skem will list the available blueprints you can then sel
 ## Variables
 
 You can use variables in a blueprint file or blueprint path (folder and/or file names).
-Just wrap your variable name with 3 underscores `___my-variable___` and skem will identify them, and propmt to ask for a
-value on installation.
+Just wrap your variable name with 3 underscores `___my-variable___` and skem will identify them, and prompt to ask for a
+value on installation. You can also overwrite the wrapper. See the following section to see the options.
 
 ## Skem config file
 
@@ -127,11 +127,12 @@ This option is incompatible with `singleFiles`.
 files.
 Use this option if your folder holds a collection of files to be used individually.
 - `variableWrapper`: <string> Overwrites the variable wrapper with the one provided.
-The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
+The pattern has to contain both start and end wrappers and those should surround the `variable` word (i.e.
+`<<variable>>`, `<%= variable %>`, `=variable>`).
 - `variableWrapper`: {wrapper: string, extension: string}[] Array defining the wrappers to use per file type (identified
-by their extensions. This helps with trying to keep a valid syntax whilst working with different file types.
+by their extensions). This helps with trying to keep a valid syntax whilst working with different file types.
 - `fileNameVariableWrapper`: <string> Overwrites the variable wrapper with the one provided only for file names.
-The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
+The rules are the same as `variableWrapper`.
 - `hooks`: {command: string, type?: pre-install | post-install, path?: string}[] Array defining the extra steps to run
 before or after the installation of the blueprint (i.e. `npm i`, `yarn i`).
 - `variableTransform`: {[variableName: string]: { transform?: string, default?: string, skipIfDefined?: boolean }} Object defining the
