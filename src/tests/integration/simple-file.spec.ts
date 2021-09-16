@@ -6,11 +6,11 @@ import { FileManager } from '../../file-manager';
 
 describe('simple-file', function () {
     describe('no config', () => {
-        it('should add and install properly ', () => {
+        it('should add and install properly ', async () => {
             const blueprintName = v4();
             const installationFolderName = v4();
             const name = v4();
-            runSkem(
+            await runSkem(
                 'add',
                 path.resolve('./test-schematics/no-config/single-files'),
                 [
@@ -18,7 +18,7 @@ describe('simple-file', function () {
                     ['-p', 'test____name____file.ts'],
                 ]
             );
-            runSkem(
+            await runSkem(
                 'install',
                 path.resolve('./temp'),
                 [
@@ -32,7 +32,7 @@ describe('simple-file', function () {
             const fileContent = fs.readFileSync(path.resolve(`./temp/${installationFolderName}/test_${name}_file.ts`), 'ascii');
             expect(fileContent.indexOf('console.log(\'log\');')).toEqual(0);
 
-            runSkem(
+            await runSkem(
                 'remove',
                 path.resolve('./temp'),
                 [
@@ -43,18 +43,18 @@ describe('simple-file', function () {
         });
     });
     describe('with config', () => {
-        it('should add and install properly ', () => {
+        it('should add and install properly ', async () => {
             const blueprintName = v4();
             const installationFolderName = v4();
             const name = v4();
-            runSkem(
+            await runSkem(
                 'add',
                 path.resolve('./test-schematics/config/single-files'),
                 [
                     ['-n', blueprintName],
                 ]
             );
-            runSkem(
+            await runSkem(
                 'install',
                 path.resolve('./temp'),
                 [
@@ -68,7 +68,7 @@ describe('simple-file', function () {
             const fileContent = fs.readFileSync(path.resolve(`./temp/${installationFolderName}/test_${name}_file.ts`), 'ascii');
             expect(fileContent.indexOf('console.log(\'log\');')).toEqual(0);
 
-            runSkem(
+            await runSkem(
                 'remove',
                 path.resolve('./temp'),
                 [

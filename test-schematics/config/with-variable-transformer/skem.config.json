@@ -3,6 +3,10 @@
     "fileNameCamelCase": {
       "transform": "camelCase(file-name)",
       "skipIfDefined": true
+    },
+    "defaultedVariable": {
+      "skipIfDefined": true,
+      "default": "aDefaultValue"
     }
   }
 }

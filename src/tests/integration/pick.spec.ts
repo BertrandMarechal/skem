@@ -6,17 +6,17 @@ import { FileManager } from '../../file-manager';
 
 describe('pick', function () {
     describe('no config', () => {
-        it('should add only the files that are picked ', () => {
+        it('should add only the files that are picked ', async () => {
             const blueprintName = v4();
             const installationFolderName = v4();
-            runSkem(
+            await runSkem(
                 'add',
                 path.resolve('./test-schematics/no-config/multiple-files'),
                 [
                     ['-n', blueprintName],
                 ]
             );
-            runSkem(
+            await runSkem(
                 'install',
                 path.resolve('./temp'),
                 [
@@ -28,7 +28,7 @@ describe('pick', function () {
             expect(FileManager.exists(path.resolve(`./temp/${installationFolderName}/index.ts`))).toEqual(true);
             expect(FileManager.exists(path.resolve(`./temp/${installationFolderName}/app.ts`))).toEqual(false);
 
-            runSkem(
+            await runSkem(
                 'remove',
                 path.resolve('./temp'),
                 [

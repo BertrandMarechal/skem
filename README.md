@@ -134,9 +134,10 @@ by their extensions. This helps with trying to keep a valid syntax whilst workin
 The pattern has to contain both start and end wrappers and those have to be the same length (i.e. `<<>>`, `$abc$abc`).
 - `hooks`: {command: string, type?: pre-install | post-install, path?: string}[] Array defining the extra steps to run
 before or after the installation of the blueprint (i.e. `npm i`, `yarn i`).
-- `variableTransform`: {[variableName: string]: { transform: string, skipIfDefined?: boolean }} Object defining the
+- `variableTransform`: {[variableName: string]: { transform?: string, default?: string, skipIfDefined?: boolean }} Object defining the
 variables that can be figuredOut through other variables.
   - Set `skipIfDefined` to true if you want to skip being prompted the variable value on installing the blueprint
+  - Set `default` to be prompted with this value on choosing the value of the variable
   - The transform property is to be composed of other variable with transform functions. The available functions are:
     - `camelCase(value)` Transforms the parameter to camelCase.
     - `pascalCase(value)` Transforms the parameter to PascalCase.

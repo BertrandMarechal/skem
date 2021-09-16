@@ -219,7 +219,9 @@ export class SkemConfigManager {
 
             const keys = Object.keys(this._config.variableTransform);
             for (const key of keys) {
-                errorMessage = VariableTransformer.validateTransform(this._config?.variableTransform[key].transform);
+                if (this._config?.variableTransform[key].transform) {
+                    errorMessage = VariableTransformer.validateTransform(this._config?.variableTransform[key].transform as string);
+                }
 
                 if (errorMessage) {
                     console.error(`Invalid config in "${this._fileName}": variableTransform "${key}" has an error: ${errorMessage}.`);
