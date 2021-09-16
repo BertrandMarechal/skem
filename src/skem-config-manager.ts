@@ -8,7 +8,7 @@ import {
 } from './variable-transformer';
 
 export const CONFIGURATION_FILE_NAME = 'skem.config.json';
-export const DEFAULT_VARIABLE_WRAPPER = '______';
+export const DEFAULT_VARIABLE_WRAPPER = '___variable___';
 
 export interface SkemConfigWrappers {
     fileNameVariableWrapper?: string;
@@ -162,7 +162,8 @@ export class SkemConfigManager {
     }
 
     private static splitWrapperIn2(wrapper: string): [string, string] {
-        return [wrapper.slice(0, (wrapper.length / 2)), wrapper.slice(-1 * (wrapper.length / 2))];
+        const [start, end] = wrapper.split('variable');
+        return [start, end];
     }
 
     private _validateConfig() {
@@ -172,12 +173,12 @@ export class SkemConfigManager {
             return;
         }
         if (this._config?.fileNameVariableWrapper && !SkemConfigManager._validateWrapper(this._config?.fileNameVariableWrapper)) {
-            console.error(`Invalid config in "${this._fileName}": fileNameVariableWrapper should be of even length. i.e. <<<>>>.`);
+            console.error(`Invalid config in "${this._fileName}": fileNameVariableWrapper should be of the following format: [start]variable[end].`);
             process.exit(1);
             return;
         }
         if (this._config?.variableWrapper && !SkemConfigManager._validateWrapper(this._config?.variableWrapper)) {
-            console.error(`Invalid config in "${this._fileName}": variableWrapper should be of even length. i.e. <<<>>>.`);
+            console.error(`Invalid config in "${this._fileName}": variableWrapper should be of the following format: [start]variable[end].`);
             process.exit(1);
             return;
         }
@@ -193,7 +194,7 @@ export class SkemConfigManager {
                     extensions.push(variableWrapper.extension);
                 }
                 if (!SkemConfigManager._validateWrapper(variableWrapper.wrapper)) {
-                    console.error(`Invalid config in "${this._fileName}": variableWrappers has one wrapper that is not of even length. i.e. <<<>>>.`);
+                    console.error(`Invalid config in "${this._fileName}": variableWrappers should be of the following format: [start]variable[end].`);
                     process.exit(1);
                     return;
                 }
@@ -219,7 +220,9 @@ export class SkemConfigManager {
 
             const keys = Object.keys(this._config.variableTransform);
             for (const key of keys) {
-                errorMessage = VariableTransformer.validateTransform(this._config?.variableTransform[key].transform);
+                if (this._config?.variableTransform[key].transform) {
+                    errorMessage = VariableTransformer.validateTransform(this._config?.variableTransform[key].transform as string);
+                }
 
                 if (errorMessage) {
                     console.error(`Invalid config in "${this._fileName}": variableTransform "${key}" has an error: ${errorMessage}.`);
@@ -231,6 +234,7 @@ export class SkemConfigManager {
     }
 
     private static _validateWrapper(wrapper: string): boolean {
-        return wrapper.length % 2 === 0;
+        const [start, end] = wrapper.split('variable');
+        return !!start && !!end;
     }
 }

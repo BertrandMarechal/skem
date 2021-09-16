@@ -214,7 +214,7 @@ describe('blueprint-manager', function () {
                     .mockImplementationOnce(() => JSON.stringify({
                         config: {
                             ...configToPrint,
-                            fileNameVariableWrapper: '------'
+                            fileNameVariableWrapper: '---variable---'
                         }
                     }));
                 const bluePrintManager = new BlueprintManager();
@@ -247,7 +247,7 @@ describe('blueprint-manager', function () {
                     .mockImplementationOnce(() => JSON.stringify({
                         config: {
                             ...configToPrint,
-                            variableWrapper: '------'
+                            variableWrapper: '---variable---'
                         }
                     }));
                 const bluePrintManager = new BlueprintManager();

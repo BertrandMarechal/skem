@@ -3,7 +3,6 @@ import { SkemVariables } from './blueprint-manager';
 import { SkemConfigManager, SkemConfigWrappers } from './skem-config-manager';
 import { VariableTransformer, VariableTransformParamsWithDependencies } from './variable-transformer';
 import { UserInterface } from './user-interface';
-import { FileManager } from './file-manager';
 
 export class VariableManager {
     parseOptionsVariables(optionVariables: string[]): Record<string, string> {
@@ -83,7 +82,11 @@ export class VariableManager {
         );
         for (const variableWithoutDependencies of variablesWithoutDependencies) {
             if (!newVariables[variableWithoutDependencies]) {
-                newVariables[variableWithoutDependencies] = await UserInterface.chooseValidVariable(variableWithoutDependencies);
+                let defaultValue = '';
+                if (variableTransform[variableWithoutDependencies]?.default) {
+                    defaultValue = variableTransform[variableWithoutDependencies].default as string;
+                }
+                newVariables[variableWithoutDependencies] = await UserInterface.chooseValidVariable(variableWithoutDependencies, defaultValue);
             }
         }
 

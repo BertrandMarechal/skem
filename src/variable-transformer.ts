@@ -1,6 +1,7 @@
 export interface VariableTransformParams {
-    transform: string;
+    transform?: string;
     skipIfDefined?: boolean;
+    default?: string;
 }
 export interface VariableTransformParamsWithDependencies extends VariableTransformParams {
     dependencies: string[];
@@ -35,9 +36,9 @@ export class VariableTransformer {
         transformParams: Record<string, VariableTransformParamsWithDependencies>,
         variables: Record<string, string | null>
     ): string {
-        if (transformParams[variableName]) {
+        if (transformParams[variableName]?.transform) {
             let carryOn = true;
-            let currentTransform = transformParams[variableName].transform;
+            let currentTransform = transformParams[variableName].transform as string;
             while (carryOn) {
                 currentTransform = currentTransform
                     .replace(
@@ -60,7 +61,10 @@ export class VariableTransformer {
         return variables[variableName] as string;
     }
 
-    static getRelatedVariables(transform: string): string[] {
+    static getRelatedVariables(transform?: string): string[] {
+        if (!transform) {
+            return [];
+        }
         let transformWithoutModifiers = transform
             .replace(/["'].*?["']/g, '');
         for (const variableModifier of variableModifiers) {
@@ -105,8 +109,8 @@ export class VariableTransformer {
                 }
             }
         }
-        // validate number of params are correct
-        // validate type of params are correct
+        // todo validate number of params are correct
+        // todo validate type of params are correct
         return;
     }
 
