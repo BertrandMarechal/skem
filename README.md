@@ -1,5 +1,6 @@
-
 # Skem
+___
+[![Unit and integration test](https://github.com/BertrandMarechal/skem/actions/workflows/github-test.yml/badge.svg)](https://github.com/BertrandMarechal/skem/actions/workflows/github-test.yml)
 
 Your blueprint manager.
 
@@ -38,14 +39,14 @@ To add a blueprint to your library run `skem add` (or `skem a`).
 
 #### Options
 
-Use the `--path` (or `-p`) option to tell where to source the blueprint from. The default is `.`.
+- Use the `--path` (or `-p`) option to tell where to source the blueprint from. The default is `.`.
 
-Use the `--name` (or `-n`) option to provide the name you want to give to your blueprint.
+- Use the `--name` (or `-n`) option to provide the name you want to give to your blueprint.
 If none is provided, the CLI will prompt a message for you to provide the name.
 
-Use the `--repo` (or `-r`) option to add all the sub folder of a folder as individual blueprints.
+- Use the `--repo` (or `-r`) option to add all the sub folder of a folder as individual blueprints.
 
-Use the `--git` (or `-g`) option to pull a git repository and add its blueprint(s) to the local library.
+- Use the `--git` (or `-g`) option to pull a git repository and add its blueprint(s) to the local library.
 
 ### Install
 
@@ -53,18 +54,18 @@ To install a blueprint, just run `skem install` (or `skem i`).
 
 #### Options
 
-Use the `--path` (or `-p`) option to tell where to install the blueprint from. The default is `.`.
+- Use the `--path` (or `-p`) option to tell where to install the blueprint from. The default is `.`.
 
-Use the `--name` (or `-n`) option to provide the name of the blueprint you want to install.
+- Use the `--name` (or `-n`) option to provide the name of the blueprint you want to install.
 If no name is provided, skem will list the available blueprints you can then select from.
 If part of a name is provided, skem will filter the available blueprints that contain the value passed as parameter.
 
-Use the `--force` (or `-f`) option to remove the confirmation prompt on overwriting existing files.
+- Use the `--force` (or `-f`) option to remove the confirmation prompt on overwriting existing files.
 
-Use the `--pick` option to filter the files to install. Provide a value to filter the files. Passing no value will offer
+- Use the `--pick` option to filter the files to install. Provide a value to filter the files. Passing no value will offer
 the possibility pick amongst all the files.
 
-Use the `--variable` (or `-v`) option to give the value of a variable used in the blueprint.
+- Use the `--variable` (or `-v`) option to give the value of a variable used in the blueprint.
 
 The values have to be provided as follows : `--variable name=test` and `--variable text='Lorem ipsum...'`
 
@@ -78,7 +79,7 @@ This will go to the root of the blueprints, read the configuration and update th
 
 #### Options
 
-Use the `--name` (or `-n`) option to provide the name of the blueprint you want to update.
+- Use the `--name` (or `-n`) option to provide the name of the blueprint you want to update.
 Updates all if no value is provided.
 
 ### Remove
@@ -87,10 +88,10 @@ To remove one or all the blueprints from the local library, just run `skem remov
 
 #### Options
 
-Use the `--name` (or `-n`) option to provide the name of the blueprint you want to remove.
+- Use the `--name` (or `-n`) option to provide the name of the blueprint you want to remove.
 Clears the library if no value is provided.
 
-Use the `--force` (or `-f`) option to remove the confirmation prompt on clearing the blueprint library.
+- Use the `--force` (or `-f`) option to remove the confirmation prompt on clearing the blueprint library.
 
 ### List
 
@@ -102,7 +103,7 @@ To print information about a blueprint in the local library, just run `skem prin
 
 #### Options
 
-Use the `--name` (or `-n`) option to provide the name of the blueprint you want to print.
+- Use the `--name` (or `-n`) option to provide the name of the blueprint you want to print.
 If no name is provided, skem will list the available blueprints you can then select from.
 
 ## Variables
@@ -161,7 +162,3 @@ variables that can be figuredOut through other variables.
 ### Examples
 
 You can check the [test-schematics](./test-schematics) folder for examples about how to use the config files. 
-
-## Ideas
-
-- [ ] Remove the temp git folders from the local location
