@@ -146,11 +146,11 @@ export class VariableManager {
             const fileName = fileList[i];
             const [fileContentStartWrapper, fileContentEndWrapper] = this.translateWrappersToRegExpString(SkemConfigManager.getVariableWrapper(fileName, skemWrappers));
             const data = fs.readFileSync(fileName, 'ascii');
-            let matchedVariables = (data.match(new RegExp(`${fileContentStartWrapper}([a-z0-9-]+)${fileContentEndWrapper}`, 'ig')) || [])
-                .concat(fileName.match(new RegExp(`${fileNameStartWrapper}([a-z0-9-]+)${fileNameEndWrapper}`, 'ig')) || []);
+            let matchedVariables = (data.match(new RegExp(`${fileContentStartWrapper}([a-z][a-z0-9-_]+?[a-z0-9])${fileContentEndWrapper}`, 'ig')) || [])
+                .concat(fileName.match(new RegExp(`${fileNameStartWrapper}([a-z][a-z0-9-_]+?[a-z0-9])${fileNameEndWrapper}`, 'ig')) || []);
             if (matchedVariables.length) {
                 matchedVariables = matchedVariables
-                    .map(v => v.replace(new RegExp(`^(${fileContentStartWrapper}|${fileNameStartWrapper})([a-z0-9-]+)(${fileContentEndWrapper}|${fileNameEndWrapper})$`, 'i'), '$2'))
+                    .map(v => v.replace(new RegExp(`^(${fileContentStartWrapper}|${fileNameStartWrapper})([a-z][a-z0-9-_]+?[a-z0-9])(${fileContentEndWrapper}|${fileNameEndWrapper})$`, 'i'), '$2'))
                     .reduce((agg: string[], curr) => {
                         if (!agg.some(item => item === curr)) {
                             agg.push(curr);
